@@ -1,0 +1,600 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		FB4421092E09F3040013CFC0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FB4420F22E09F3030013CFC0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FB4420F92E09F3030013CFC0;
+			remoteInfo = "ABM-APIClient";
+		};
+		FB4421132E09F3040013CFC0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FB4420F22E09F3030013CFC0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FB4420F92E09F3030013CFC0;
+			remoteInfo = "ABM-APIClient";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		FB4420FA2E09F3030013CFC0 /* ABM-APIClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ABM-APIClient.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB4421082E09F3040013CFC0 /* ABM-APIClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ABM-APIClientTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB4421122E09F3040013CFC0 /* ABM-APIClientUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ABM-APIClientUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FB4421312E09F4F40013CFC0 /* Exceptions for "ABM-APIClient" folder in "ABM-APIClient" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FB4420F92E09F3030013CFC0 /* ABM-APIClient */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		FB4420FC2E09F3030013CFC0 /* ABM-APIClient */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FB4421312E09F4F40013CFC0 /* Exceptions for "ABM-APIClient" folder in "ABM-APIClient" target */,
+			);
+			path = "ABM-APIClient";
+			sourceTree = "<group>";
+		};
+		FB44210B2E09F3040013CFC0 /* ABM-APIClientTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "ABM-APIClientTests";
+			sourceTree = "<group>";
+		};
+		FB4421152E09F3040013CFC0 /* ABM-APIClientUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "ABM-APIClientUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FB4420F72E09F3030013CFC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB4421052E09F3040013CFC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB44210F2E09F3040013CFC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FB4420F12E09F3030013CFC0 = {
+			isa = PBXGroup;
+			children = (
+				FB4420FC2E09F3030013CFC0 /* ABM-APIClient */,
+				FB44210B2E09F3040013CFC0 /* ABM-APIClientTests */,
+				FB4421152E09F3040013CFC0 /* ABM-APIClientUITests */,
+				FB4420FB2E09F3030013CFC0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FB4420FB2E09F3030013CFC0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FB4420FA2E09F3030013CFC0 /* ABM-APIClient.app */,
+				FB4421082E09F3040013CFC0 /* ABM-APIClientTests.xctest */,
+				FB4421122E09F3040013CFC0 /* ABM-APIClientUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FB4420F92E09F3030013CFC0 /* ABM-APIClient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB44211C2E09F3040013CFC0 /* Build configuration list for PBXNativeTarget "ABM-APIClient" */;
+			buildPhases = (
+				FB4420F62E09F3030013CFC0 /* Sources */,
+				FB4420F72E09F3030013CFC0 /* Frameworks */,
+				FB4420F82E09F3030013CFC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				FB4420FC2E09F3030013CFC0 /* ABM-APIClient */,
+			);
+			name = "ABM-APIClient";
+			packageProductDependencies = (
+			);
+			productName = "ABM-APIClient";
+			productReference = FB4420FA2E09F3030013CFC0 /* ABM-APIClient.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FB4421072E09F3040013CFC0 /* ABM-APIClientTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB44211F2E09F3040013CFC0 /* Build configuration list for PBXNativeTarget "ABM-APIClientTests" */;
+			buildPhases = (
+				FB4421042E09F3040013CFC0 /* Sources */,
+				FB4421052E09F3040013CFC0 /* Frameworks */,
+				FB4421062E09F3040013CFC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FB44210A2E09F3040013CFC0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				FB44210B2E09F3040013CFC0 /* ABM-APIClientTests */,
+			);
+			name = "ABM-APIClientTests";
+			packageProductDependencies = (
+			);
+			productName = "ABM-APIClientTests";
+			productReference = FB4421082E09F3040013CFC0 /* ABM-APIClientTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		FB4421112E09F3040013CFC0 /* ABM-APIClientUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB4421222E09F3040013CFC0 /* Build configuration list for PBXNativeTarget "ABM-APIClientUITests" */;
+			buildPhases = (
+				FB44210E2E09F3040013CFC0 /* Sources */,
+				FB44210F2E09F3040013CFC0 /* Frameworks */,
+				FB4421102E09F3040013CFC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FB4421142E09F3040013CFC0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				FB4421152E09F3040013CFC0 /* ABM-APIClientUITests */,
+			);
+			name = "ABM-APIClientUITests";
+			packageProductDependencies = (
+			);
+			productName = "ABM-APIClientUITests";
+			productReference = FB4421122E09F3040013CFC0 /* ABM-APIClientUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FB4420F22E09F3030013CFC0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					FB4420F92E09F3030013CFC0 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					FB4421072E09F3040013CFC0 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = FB4420F92E09F3030013CFC0;
+					};
+					FB4421112E09F3040013CFC0 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = FB4420F92E09F3030013CFC0;
+					};
+				};
+			};
+			buildConfigurationList = FB4420F52E09F3030013CFC0 /* Build configuration list for PBXProject "ABM-APIClient" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FB4420F12E09F3030013CFC0;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FB4421252E09F37B0013CFC0 /* XCRemoteSwiftPackageReference "jwt-kit" */,
+				FB4421492E09F6360013CFC0 /* XCRemoteSwiftPackageReference "Swift-JWT" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FB4420FB2E09F3030013CFC0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FB4420F92E09F3030013CFC0 /* ABM-APIClient */,
+				FB4421072E09F3040013CFC0 /* ABM-APIClientTests */,
+				FB4421112E09F3040013CFC0 /* ABM-APIClientUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FB4420F82E09F3030013CFC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB4421062E09F3040013CFC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB4421102E09F3040013CFC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FB4420F62E09F3030013CFC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB4421042E09F3040013CFC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB44210E2E09F3040013CFC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FB44210A2E09F3040013CFC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FB4420F92E09F3030013CFC0 /* ABM-APIClient */;
+			targetProxy = FB4421092E09F3040013CFC0 /* PBXContainerItemProxy */;
+		};
+		FB4421142E09F3040013CFC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FB4420F92E09F3030013CFC0 /* ABM-APIClient */;
+			targetProxy = FB4421132E09F3040013CFC0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		FB44211A2E09F3040013CFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		FB44211B2E09F3040013CFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		FB44211D2E09F3040013CFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "ABM-APIClient/ABM_APIClient.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "ABM-APIClient/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mavericklabs.ABM-APIClient";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FB44211E2E09F3040013CFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = "ABM-APIClient/ABM_APIClient.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "ABM-APIClient/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mavericklabs.ABM-APIClient";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FB4421202E09F3040013CFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mavericklabs.ABM-APIClientTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ABM-APIClient.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ABM-APIClient";
+			};
+			name = Debug;
+		};
+		FB4421212E09F3040013CFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mavericklabs.ABM-APIClientTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ABM-APIClient.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ABM-APIClient";
+			};
+			name = Release;
+		};
+		FB4421232E09F3040013CFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mavericklabs.ABM-APIClientUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "ABM-APIClient";
+			};
+			name = Debug;
+		};
+		FB4421242E09F3040013CFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LJ3W53UDG4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mavericklabs.ABM-APIClientUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "ABM-APIClient";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FB4420F52E09F3030013CFC0 /* Build configuration list for PBXProject "ABM-APIClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB44211A2E09F3040013CFC0 /* Debug */,
+				FB44211B2E09F3040013CFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB44211C2E09F3040013CFC0 /* Build configuration list for PBXNativeTarget "ABM-APIClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB44211D2E09F3040013CFC0 /* Debug */,
+				FB44211E2E09F3040013CFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB44211F2E09F3040013CFC0 /* Build configuration list for PBXNativeTarget "ABM-APIClientTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB4421202E09F3040013CFC0 /* Debug */,
+				FB4421212E09F3040013CFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB4421222E09F3040013CFC0 /* Build configuration list for PBXNativeTarget "ABM-APIClientUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB4421232E09F3040013CFC0 /* Debug */,
+				FB4421242E09F3040013CFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FB4421252E09F37B0013CFC0 /* XCRemoteSwiftPackageReference "jwt-kit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/vapor/jwt-kit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.2;
+			};
+		};
+		FB4421492E09F6360013CFC0 /* XCRemoteSwiftPackageReference "Swift-JWT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kitura/Swift-JWT.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+	};
+	rootObject = FB4420F22E09F3030013CFC0 /* Project object */;
+}
