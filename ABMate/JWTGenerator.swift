@@ -1,6 +1,6 @@
 //
 //  JWTGenerator.swift
-//  ABM-APIClient
+//  ABMate
 //
 //  © Created by Somesh Pathak on 23/06/2025.
 //

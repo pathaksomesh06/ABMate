@@ -1,13 +1,13 @@
 //
-//  ABM_APIClientUITestsLaunchTests.swift
-//  ABM-APIClientUITests
+//  ABMateUITestsLaunchTests.swift
+//  ABMateUITests
 //
 //  Created by Somesh Pathak on 23/06/2025.
 //
 
 import XCTest
 
-final class ABM_APIClientUITestsLaunchTests: XCTestCase {
+final class ABMateUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

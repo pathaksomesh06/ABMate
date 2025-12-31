@@ -1,6 +1,6 @@
 //
 //  APIService.swift
-//  ABM-APIClient
+//  ABMate
 //
 //  © Created by Somesh Pathak on 23/06/2025.
 //
@@ -40,7 +40,20 @@ class APIService {
         request.httpBody = bodyString.data(using: .utf8)
         
         // Make request
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        // Debug the response from Apple's auth server
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            let errorBody = String(data: data, encoding: .utf8) ?? "No response body"
+            print("Apple Auth Error (\(httpResponse.statusCode)): \(errorBody)")
+            // Try to decode a potential error response
+            if let authError = try? JSONDecoder().decode(AuthErrorResponse.self, from: data) {
+                throw NSError(domain: "Auth", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Authentication failed: \(authError.error) - \(authError.errorDescription ?? "")"])
+            } else {
+                throw NSError(domain: "Auth", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "An unknown authentication error occurred. Response: \(errorBody)"])
+            }
+        }
+        
         let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
         
         // Store token and expiry
@@ -85,6 +98,11 @@ class APIService {
                 }
             }
             
+            // Debug: Print raw JSON for first page
+            if allDevices.isEmpty {
+                print("Raw Device Response: \(String(data: data, encoding: .utf8) ?? "No data")")
+            }
+            
             let deviceResponse = try JSONDecoder().decode(DevicesResponse.self, from: data)
             
             allDevices.append(contentsOf: deviceResponse.data)
@@ -103,6 +121,65 @@ class APIService {
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(DeviceDetailResponse.self, from: data)
         return response.data
+    }
+    
+    // Get AppleCare Coverage for a device
+    func getAppleCareCoverage(deviceId: String, accessToken: String) async throws -> AppleCareCoverage {
+        let url = URL(string: "https://api-business.apple.com/v1/orgDevices/\(deviceId)/appleCareCoverage")!
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        // Always print raw response for debugging
+        let responseString = String(data: data, encoding: .utf8) ?? "No data"
+        print("AppleCare Raw Response: \(responseString)")
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            print("AppleCare Status Code: \(httpResponse.statusCode)")
+            
+            if httpResponse.statusCode != 200 {
+                let errorMessage: String
+                switch httpResponse.statusCode {
+                case 404:
+                    errorMessage = "No AppleCare coverage information available for this device."
+                default:
+                    errorMessage = "AppleCare API returned status \(httpResponse.statusCode)"
+                }
+                
+                throw NSError(domain: "API", code: httpResponse.statusCode,
+                            userInfo: [NSLocalizedDescriptionKey: errorMessage])
+            }
+        }
+        
+        do {
+            let coverageResponse = try JSONDecoder().decode(AppleCareCoverageResponse.self, from: data)
+            print("AppleCare decoded successfully: \(coverageResponse.data.attributes.coverageStatus ?? "nil")")
+            return coverageResponse.data
+        } catch {
+            print("AppleCare JSON decode error: \(error)")
+            throw error
+        }
+    }
+    
+    // Get assigned MDM server for a device
+    func getAssignedServer(deviceId: String, accessToken: String) async throws -> String? {
+        let url = URL(string: "https://api-business.apple.com/v1/orgDevices/\(deviceId)/relationships/assignedServer")!
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            if httpResponse.statusCode != 200 {
+                return nil
+            }
+        }
+        
+        let relationResponse = try JSONDecoder().decode(AssignedServerResponse.self, from: data)
+        return relationResponse.data?.id
     }
     
     // Fetch MDM servers
@@ -181,6 +258,7 @@ class APIService {
         let activityResponse = try JSONDecoder().decode(ActivityStatusResponse.self, from: data)
         return activityResponse.data.id
     }
+    
 }
 
 
@@ -192,6 +270,15 @@ struct RelationshipResponse: Codable {
     let data: [RelationData]
     
     struct RelationData: Codable {
+        let type: String
+        let id: String
+    }
+}
+
+struct AssignedServerResponse: Codable {
+    let data: ServerRelationData?
+    
+    struct ServerRelationData: Codable {
         let type: String
         let id: String
     }

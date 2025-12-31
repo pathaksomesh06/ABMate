@@ -1,6 +1,6 @@
 //
 //  Models.swift
-//  ABM-APIClient
+//  ABMate
 //
 //  © Created by Somesh Pathak on 23/06/2025.
 //
@@ -27,6 +27,17 @@ struct TokenResponse: Codable {
     }
 }
 
+// Auth Error Response
+struct AuthErrorResponse: Codable {
+    let error: String
+    let errorDescription: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case error
+        case errorDescription = "error_description"
+    }
+}
+
 // Device Model
 struct OrgDevice: Codable, Identifiable, Hashable {
     let id: String
@@ -35,20 +46,25 @@ struct OrgDevice: Codable, Identifiable, Hashable {
     
     struct DeviceAttributes: Codable, Hashable {
         let serialNumber: String
-        let name: String?
-        let model: String?
-        let deviceFamily: String?
-        let osVersion: String?
+        let deviceModel: String?
+        let productFamily: String?
+        let productType: String?
+        let deviceCapacity: String?
+        let color: String?
         let status: String?
+        let orderNumber: String?
+        let addedToOrgDateTime: String?
+        let updatedDateTime: String?
     }
     
-    
+    // Convenience accessors
     var serialNumber: String { attributes.serialNumber }
-    var name: String? { attributes.name }
-    var model: String? { attributes.model }
-    var os: String? { attributes.deviceFamily }
-    var osVersion: String? { attributes.osVersion }
+    var name: String? { nil } // ABM API doesn't provide device name
+    var model: String? { attributes.deviceModel }
+    var os: String? { attributes.productFamily }
+    var osVersion: String? { nil } // Not provided by ABM API
     var enrollmentState: String? { attributes.status }
+    var productType: String? { attributes.productType }
 }
 
 // Device Response
@@ -129,5 +145,51 @@ struct ActivityStatusResponse: Codable {
         let status: String
         let subStatus: String
         let createdDateTime: String
+    }
+}
+
+
+// AppleCare Coverage Response
+struct AppleCareCoverageResponse: Codable {
+    let data: AppleCareCoverage
+}
+
+struct AppleCareCoverage: Codable, Hashable {
+    let id: String
+    let type: String
+    let attributes: AppleCareAttributes
+    
+    struct AppleCareAttributes: Codable, Hashable {
+        // All fields are optional since API might not return all of them
+        let serialNumber: String?
+        let coverageStatus: String?
+        let coverageEndDate: String?
+        let purchaseDate: String?
+        let registrationDate: String?
+        let warrantyStatus: String?
+        let repairCoverage: String?
+        let technicalSupportCoverage: String?
+        let appleCarePlanType: String?
+        let deviceId: String?
+        let hardwareType: String?
+        let estimatedPurchaseDate: String?
+        let coverageType: String?
+        
+        // Handle different key naming conventions from API
+        enum CodingKeys: String, CodingKey {
+            case serialNumber
+            case coverageStatus
+            case coverageEndDate
+            case purchaseDate
+            case registrationDate
+            case warrantyStatus
+            case repairCoverage
+            case technicalSupportCoverage
+            case appleCarePlanType
+            case deviceId
+            case hardwareType
+            case estimatedPurchaseDate
+            case coverageType
+        }
     }
 }

@@ -1,13 +1,13 @@
 //
-//  ABM_APIClientUITests.swift
-//  ABM-APIClientUITests
+//  ABMateUITests.swift
+//  ABMateUITests
 //
 //  Created by Somesh Pathak on 23/06/2025.
 //
 
 import XCTest
 
-final class ABM_APIClientUITests: XCTestCase {
+final class ABMateUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -15,7 +15,7 @@ final class ABM_APIClientUITests: XCTestCase {
         // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
 
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+        // In UI tests it's important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
 
     override func tearDownWithError() throws {

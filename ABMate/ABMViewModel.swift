@@ -1,6 +1,6 @@
 //
 //  ABMViewModel.swift
-//  ABM-APIClient
+//  ABMate
 //
 //  © Created by Somesh Pathak on 23/06/2025.
 //
@@ -77,6 +77,46 @@ class ABMViewModel: ObservableObject {
         }
     }
     
+    // Connect to ABM
+    func connectToABM() {
+        guard let assertion = clientAssertion else {
+            errorMessage = "Generate JWT first"
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+        statusMessage = nil
+        devices = []
+        mdmServers = []
+
+        Task {
+            do {
+                let token = try await apiService.getAccessToken(
+                    clientAssertion: assertion,
+                    clientId: clientId
+                )
+                
+                print("Successfully obtained access token. Fetching data...")
+                
+                // Fetch devices and servers
+                let fetchedDevices = try await apiService.fetchDevices(accessToken: token)
+                print("Successfully fetched \(fetchedDevices.count) devices.")
+                devices = fetchedDevices
+                
+                let fetchedServers = try await apiService.fetchMDMServers(accessToken: token)
+                print("Successfully fetched \(fetchedServers.count) servers.")
+                mdmServers = fetchedServers
+                
+                statusMessage = "Connected to ABM. Fetched \(devices.count) devices and \(mdmServers.count) servers."
+            } catch {
+                print("Error during ABM connection: \(error)")
+                errorMessage = "ABM Connection Error: \(error.localizedDescription)"
+            }
+            isLoading = false
+        }
+    }
+
     // Save credentials to UserDefaults
     private func saveCredentials() {
         UserDefaults.standard.set(clientId, forKey: "clientId")
@@ -87,5 +127,20 @@ class ABMViewModel: ObservableObject {
     func loadCredentials() {
         clientId = UserDefaults.standard.string(forKey: "clientId") ?? ""
         keyId = UserDefaults.standard.string(forKey: "keyId") ?? ""
+    }
+    
+    
+    // Get current access token
+    func getCurrentAccessToken() async -> String? {
+        guard let assertion = clientAssertion else { return nil }
+        
+        do {
+            return try await apiService.getAccessToken(
+                clientAssertion: assertion,
+                clientId: clientId
+            )
+        } catch {
+            return nil
+        }
     }
 }

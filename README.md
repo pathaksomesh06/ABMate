@@ -1,96 +1,157 @@
-# ABM/ASM API Client for macOS
+# ABMate
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![macOS](https://img.shields.io/badge/macOS-26+-blue?logo=apple&logoColor=white)](https://www.apple.com/macos/)
-[![Swift](https://img.shields.io/badge/Swift-5.10+-orange?logo=swift&logoColor=white)](https://developer.apple.com/swift/)
-[![Xcode](https://img.shields.io/badge/Xcode-15.0+-blue?logo=xcode&logoColor=white)](https://developer.apple.com/xcode/)
+<p align="center">
+  <img src="ABMate/Assets.xcassets/AppIcon.appiconset/256.png" alt="ABMate Logo" width="128" height="128">
+</p>
 
-A native macOS client built with Swift to provide a graphical user interface (GUI) for the new Apple Business Manager (ABM) and Apple School Manager (ASM) REST APIs. This project aims to revolutionize large-scale Apple device management by moving beyond command-line interfaces and cumbersome web portals, enabling effortless and automated workflows.
+<p align="center">
+  <strong>A native macOS client for Apple Business Manager API</strong>
+</p>
 
-## Introduction
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#requirements">Requirements</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#setup">Setup</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#license">License</a>
+</p>
 
-Managing thousands of Apple devices in enterprise and education environments has historically been a manual, time-consuming process. IT administrators spend countless hours clicking through web interfaces to assign devices to MDM servers, check enrollment status, and generate reports. With Apple's introduction of REST APIs for Apple Business Manager (ABM) and Apple School Manager (ASM) at WWDC 2025, this paradigm shifts dramatically.
+---
 
-This project presents a complete walkthrough of building a production-ready native macOS client that leverages these APIs to transform device management workflows. We'll explore the technical architecture, implementation challenges, security considerations, and real-world performance improvements achieved through API automation.
+## Overview
 
-## The Problem: Manual Device Management at Scale
+**ABMate** is a native macOS application built with SwiftUI that provides a modern, user-friendly interface for interacting with the Apple Business Manager (ABM) and Apple School Manager (ASM) APIs. It streamlines device management workflows by replacing complex API calls with an intuitive GUI.
 
-Before we unveil the solution, let's confront the significant hurdles IT teams navigate daily when managing vast Apple device fleets:
+## Features
 
-**1. Time Sinks, Not Time Savers:**
-    * **Tedious Assignments:** Allocating 100 devices to an MDM server can consume 15-20 minutes and require roughly 300 clicks.
-    * **Clunky Reporting:** Manual CSV exports offer limited filtering, making comprehensive reporting a slog.
-    * **Status Quo Struggles:** Checking assignment status means navigating countless pages, one at a time.
+- 🖥️ **Device Management** - View and manage all enrolled devices
+- 📊 **Dashboard** - Quick overview of devices, MDM servers, and status
+- 🔄 **Device Assignment** - Bulk assign/unassign devices to MDM servers
+- 📤 **Export to CSV** - Export device lists for reporting
+- 🔐 **Secure Authentication** - JWT-based authentication with ABM API
+- 📱 **Device Breakdown** - View devices by type (Mac, iPhone, iPad, Apple TV)
+- ✅ **AppleCare Coverage** - Check warranty and coverage status
+- 📋 **Activity Tracking** - Monitor batch operation progress
 
-**2. The Inevitable Human Factor:**
-    * **Misclicks & Mistakes:** Bulk selections are ripe for errors, leading to incorrect assignments.
-    * **Inconsistent Data:** Manual processes breed variations in device naming and MDM server allocation.
+## Requirements
 
-**3. Automation's Missing Link:**
-    * **No Scheduled Tasks:** Routine operations demand constant manual intervention.
-    * **Rules? What Rules?:** Lack of rule-based assignments prevents proactive management.
-    * **Isolated Systems:** No seamless integration with essential ticketing or inventory systems.
+- macOS 14.0 (Sonoma) or later
+- Xcode 15.0 or later (for building from source)
+- Apple Business Manager or Apple School Manager account
+- ABM API credentials (Client ID, Key ID, Private Key)
 
-**4. Blurry Visibility:**
-    * **Lagging Data:** Real-time status updates are a pipe dream, leaving IT in the dark.
-    * **Basic Insights:** Reporting rarely offers the granular detail needed for informed decisions.
-    * **Absent History:** Tracking past activities is challenging, hindering troubleshooting and auditing.
+## Installation
 
-## Apple's Game-Changing API Release: Powering Our macOS Client
+### Option 1: Download Release
+Download the latest release from the [Releases](https://github.com/pathaksomesh06/ABMate/releases) page.
 
-At the heart of this revolution in device management lies Apple's new RESTful API, offering robust programmatic access to core Apple Business Manager (ABM) and Apple School Manager (ASM) functionalities. This foundational technology is what makes our native macOS client so powerful.
+### Option 2: Build from Source
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/pathaksomesh06/ABMate.git
+   cd ABMate
+   ```
 
-**API Essentials:**
+2. Open in Xcode:
+   ```bash
+   open ABMate.xcodeproj
+   ```
 
-* **Base URL:** `https://api-business.apple.com/v1/`
-* **Authentication:** Secure OAuth 2.0 with JWT Client Assertions.
-* **Rate Limits:** A generous 100 requests per second.
-* **Pagination:** Efficient link-based pagination, defaulting to 100 items per page.
+3. Build and run (⌘+R)
 
-**Key Endpoints for Comprehensive Control:**
+## Setup
 
-The API exposes critical endpoints, enabling the granular device management capabilities within our client:
+### Getting ABM API Credentials
 
-* **Device Information:**
-    * `GET /v1/orgDevices` — List all organizational devices.
-    * `GET /v1/orgDevices/{id}` — Get detailed information for a specific device.
-    * `GET /v1/orgDevices/{id}/relationships/assignedServer` — Determine a device's assigned MDM server.
-* **MDM Server Operations:**
-    * `GET /v1/mdmServers` — Retrieve a list of all registered MDM servers.
-    * `GET /v1/mdmServers/{id}/relationships/devices` — View devices associated with a particular MDM server.
-* **Powerful Batch Operations:**
-    * `POST /v1/orgDeviceActivities` — Execute bulk assignments or unassignments of devices.
-    * `GET /v1/orgDeviceActivities/{id}` — Monitor the status of ongoing batch operations.
+1. Sign in to [Apple Business Manager](https://business.apple.com)
+2. Navigate to **Settings** → **API**
+3. Generate a new API key:
+   - Note the **Client ID** (starts with `BUSINESSAPI.`)
+   - Note the **Key ID**
+   - Download the **Private Key** (.p8 file)
 
-## Authentication Flow: JWT-Based Security
+### Configuring ABMate
 
-Apple's API authentication moves beyond simple API keys, leveraging a more secure and robust JWT (JSON Web Token) based mechanism. Here's a breakdown of the multi-step process:
+1. Launch ABMate
+2. Click **Connection** in the sidebar (or the **Configure** button on the dashboard)
+3. Enter your credentials:
+   - **Client ID**: Your ABM client ID
+   - **Key ID**: Your API key ID
+   - **Private Key**: Import your .p8 file
+4. Click **Generate JWT Token**
+5. Click **Connect to ABM**
 
-**1. Initial Setup in ABM:**
+## Usage
 
-* **Create an API Key:** Begin by generating an API key directly within your Apple Business Manager account.
-* **Generate Private Key:** During this process, you'll generate a private key (using the P-256 elliptic curve), which is crucial for signing your JWTs.
-* **Note Credentials:** Securely record your unique **Client ID** and **Key ID** — these identify your application.
-* **Secure Storage:** Crucially, the generated private key must be stored in a highly secure manner.
+### Dashboard
+The dashboard provides a quick overview of:
+- Total devices enrolled
+- Number of MDM servers
+- Device breakdown by type
+- Quick actions for common tasks
 
-**2. Generating the JWT Client Assertion:**
+### Devices
+- View all enrolled devices with search and filter capabilities
+- Double-click a device to view details
+- Check AppleCare coverage status
+- Export device lists to CSV
 
-This is the signed token your application creates to assert its identity. It consists of a header and a payload:
+### Assign Devices
+- Bulk assign devices to MDM servers
+- Bulk unassign devices from MDM servers
+- Track assignment progress
 
-```json
-// JWT Header: Specifies the algorithm and key ID
-{
-  "alg": "ES256", // Elliptic Curve Digital Signature Algorithm using P-256 and SHA-256
-  "kid": "your-key-id", // Your unique Key ID from ABM
-  "typ": "JWT"        // Token type
-}
+### Activity Status
+- Monitor batch operation progress
+- Check status of recent assignments
 
-// JWT Payload: Contains claims about the assertion
-{
-  "sub": "BUSINESSAPI.client-id",                         // The subject (your Client ID, prefixed)
-  "aud": "[https://account.apple.com/auth/oauth2/v2/token](https://account.apple.com/auth/oauth2/v2/token)", // The audience (Apple's token endpoint)
-  "iat": 1719263110,                                       // Issued At timestamp (Unix epoch time)
-  "exp": 1734815110,                                       // Expiration timestamp (Unix epoch time)
-  "jti": "unique-token-id",                                // Unique JWT ID for replay prevention
-  "iss": "BUSINESSAPI.client-id"                          // The issuer (your Client ID, prefixed)
-}
+## API Endpoints Used
+
+ABMate interacts with the following Apple Business Manager API endpoints:
+
+| Endpoint | Description |
+|----------|-------------|
+| `/v1/orgDevices` | List organization devices |
+| `/v1/mdmServers` | List MDM servers |
+| `/v1/orgDeviceActivities` | Check activity status |
+| `/v1/mdmServers/{id}/devices` | Assign devices to MDM |
+| `/v1/devices/{id}/appleCare` | Get AppleCare coverage |
+
+## Security
+
+- Credentials are stored securely in the macOS Keychain
+- JWT tokens are generated locally using your private key
+- No credentials are transmitted to third parties
+- All API communication uses HTTPS
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Author
+
+**Somesh Pathak**
+- GitHub: [@pathaksomesh06](https://github.com/pathaksomesh06)
+- Blog: [Intune in Real Life](https://intuneinreallife.com)
+
+## Acknowledgments
+
+- Apple Business Manager API Documentation
+- SwiftUI and Swift community
+
+---
+
+<p align="center">
+  Made with ❤️ for the Apple Admin community
+</p>

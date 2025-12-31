@@ -1,14 +1,14 @@
 //
-//  ABM_APIClientTests.swift
-//  ABM-APIClientTests
+//  ABMateTests.swift
+//  ABMateTests
 //
 //  Created by Somesh Pathak on 23/06/2025.
 //
 
 import Testing
-@testable import ABM_APIClient
+@testable import ABMate
 
-struct ABM_APIClientTests {
+struct ABMateTests {
 
     @Test func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.

@@ -1,6 +1,6 @@
 //
 //  CSVDocument.swift
-//  ABM-APIClient
+//  ABMate
 //
 // © Created by Somesh Pathak on 24/06/2025.
 //
@@ -15,15 +15,14 @@ struct CSVDocument: FileDocument {
     var csvString: String
     
     init(devices: [OrgDevice]) {
-        var csv = "Serial Number,Name,Model,OS,OS Version,Status,ID\n"
+        var csv = "Serial Number,Model,Product Family,Product Type,Status,ID\n"
         
         for device in devices {
             let row = [
                 device.serialNumber,
-                device.name ?? "",
                 device.model ?? "",
                 device.os ?? "",
-                device.osVersion ?? "",
+                device.productType ?? "",
                 device.enrollmentState ?? "",
                 device.id
             ]
