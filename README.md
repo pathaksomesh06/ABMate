@@ -1,7 +1,6 @@
 # ABMate
+<img width="128" height="128" alt="AppIcon" src="https://github.com/user-attachments/assets/799f6794-1565-4092-acca-b08d8658c1d4" />
 
-<p ali[AppIcon-1 (dragged).tiff](https://github.com/user-attachments/files/24395935/AppIcon-1.dragged.tiff)
-gn="center">
   
 </p>
 
