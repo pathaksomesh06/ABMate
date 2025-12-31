@@ -1,7 +1,8 @@
 # ABMate
 
-<p align="center">
-  <img src="ABMate/Assets.xcassets/AppIcon.appiconset/256.png" alt="ABMate Logo" width="128" height="128">
+<p ali[AppIcon-1 (dragged).tiff](https://github.com/user-attachments/files/24395935/AppIcon-1.dragged.tiff)
+gn="center">
+  
 </p>
 
 <p align="center">
