@@ -258,3 +258,175 @@ struct AppleCareCoverage: Codable, Hashable, Identifiable {
         let paymentType: String?
     }
 }
+
+// MARK: - Jamf Pro Models
+
+/// Jamf Pro connection profile — clientSecret stored in Keychain, rest in UserDefaults
+struct JamfConnectionProfile: Codable, Identifiable, Hashable {
+    let id: UUID
+    var name: String
+    var jamfURL: String
+    var clientId: String
+    var clientSecret: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, jamfURL, clientId
+    }
+
+    init(id: UUID = UUID(), name: String, jamfURL: String, clientId: String, clientSecret: String) {
+        self.id = id
+        self.name = name
+        self.jamfURL = jamfURL
+        self.clientId = clientId
+        self.clientSecret = clientSecret
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        jamfURL = try container.decode(String.self, forKey: .jamfURL)
+        clientId = try container.decode(String.self, forKey: .clientId)
+        clientSecret = "" // loaded from Keychain
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(jamfURL, forKey: .jamfURL)
+        try container.encode(clientId, forKey: .clientId)
+    }
+}
+
+/// Jamf Pro OAuth token response
+struct JamfTokenResponse: Codable {
+    let accessToken: String
+    let expiresIn: Int
+    let tokenType: String
+
+    enum CodingKeys: String, CodingKey {
+        case accessToken = "access_token"
+        case expiresIn = "expires_in"
+        case tokenType = "token_type"
+    }
+}
+
+/// Jamf Pro computer inventory search response
+struct JamfComputerSearchResponse: Codable {
+    let totalCount: Int
+    let results: [JamfComputer]
+}
+
+/// Jamf Pro computer from inventory endpoint
+struct JamfComputer: Codable, Identifiable {
+    let id: String
+    let general: JamfComputerGeneral?
+    let hardware: JamfComputerHardware?
+    let purchasing: JamfPurchasing?
+}
+
+struct JamfComputerGeneral: Codable {
+    let name: String?
+    let managementId: String?
+}
+
+struct JamfComputerHardware: Codable {
+    let serialNumber: String?
+    let model: String?
+    let modelIdentifier: String?
+}
+
+/// Jamf Pro purchasing info — used for both reading and writing
+struct JamfPurchasing: Codable {
+    var purchased: Bool?
+    var leased: Bool?
+    var poNumber: String?
+    var poDate: String?
+    var vendor: String?
+    var warrantyDate: String?
+    var appleCareId: String?
+    var leaseDate: String?
+    var purchasePrice: String?
+    var lifeExpectancy: Int?
+    var purchasingAccount: String?
+    var purchasingContact: String?
+}
+
+/// Wrapper for PATCH /api/v1/computers-inventory-detail/{id}
+struct JamfComputerDetailUpdate: Codable {
+    let purchasing: JamfPurchasing
+}
+
+/// Jamf Pro mobile device search response
+struct JamfMobileDeviceSearchResponse: Codable {
+    let totalCount: Int
+    let results: [JamfMobileDevice]
+}
+
+struct JamfMobileDevice: Codable, Identifiable {
+    let id: String
+    let name: String?
+    let serialNumber: String?
+    let model: String?
+}
+
+/// Jamf mobile device detail (for reading purchasing info)
+struct JamfMobileDeviceDetail: Codable {
+    let id: String
+    let purchasing: JamfPurchasing?
+}
+
+/// Wrapper for PATCH /api/v2/mobile-devices/{id}
+struct JamfMobileDeviceUpdate: Codable {
+    let purchasing: JamfPurchasing
+}
+
+/// Represents a device found in Jamf Pro (computer or mobile)
+enum JamfDeviceType: String {
+    case computer = "Computer"
+    case mobileDevice = "Mobile Device"
+}
+
+struct JamfDeviceMatch {
+    let id: String
+    let name: String
+    let serial: String
+    let model: String
+    let deviceType: JamfDeviceType
+    let currentPurchasing: JamfPurchasing?
+}
+
+/// Represents what we want to sync from ASM to Jamf
+struct SyncPayload {
+    let poNumber: String
+    let warrantyDate: String
+    let appleCareId: String
+    let purchasePrice: String
+    let vendor: String
+    let purchasingAccount: String
+    let purchasingContact: String
+    let leaseDate: String
+    let lifeExpectancy: Int
+    let purchased: Bool
+    let leased: Bool
+    let poDate: String
+
+    /// Convert to Jamf purchasing object
+    func toJamfPurchasing() -> JamfPurchasing {
+        JamfPurchasing(
+            purchased: purchased,
+            leased: leased,
+            poNumber: poNumber.isEmpty ? nil : poNumber,
+            poDate: poDate.isEmpty ? nil : poDate,
+            vendor: vendor.isEmpty ? nil : vendor,
+            warrantyDate: warrantyDate.isEmpty ? nil : warrantyDate,
+            appleCareId: appleCareId.isEmpty ? nil : appleCareId,
+            leaseDate: leaseDate.isEmpty ? nil : leaseDate,
+            purchasePrice: purchasePrice.isEmpty ? nil : purchasePrice,
+            lifeExpectancy: lifeExpectancy,
+            purchasingAccount: purchasingAccount.isEmpty ? nil : purchasingAccount,
+            purchasingContact: purchasingContact.isEmpty ? nil : purchasingContact
+        )
+    }
+}

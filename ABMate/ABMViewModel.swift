@@ -17,7 +17,7 @@ class ABMViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var statusMessage: String?
     @Published var lastActivityId: String?
-    
+
     // Credentials
     @Published var clientId = ""
     @Published var keyId = ""
@@ -26,6 +26,23 @@ class ABMViewModel: ObservableObject {
     // Connection Profiles
     @Published var savedProfiles: [ConnectionProfile] = []
     @Published var activeProfileId: UUID?
+
+    // MARK: - Jamf Pro Connection
+    @Published var jamfURL = ""
+    @Published var jamfClientId = ""
+    @Published var jamfClientSecret = ""
+    @Published var jamfSavedProfiles: [JamfConnectionProfile] = []
+    @Published var activeJamfProfileId: UUID?
+    @Published var isJamfConnected = false
+    @Published var jamfStatusMessage: String?
+    @Published var jamfErrorMessage: String?
+    @Published var isJamfLoading = false
+
+    let jamfAPIService = JamfAPIService()
+
+    var activeJamfProfileName: String? {
+        jamfSavedProfiles.first(where: { $0.id == activeJamfProfileId })?.name
+    }
 
     var activeProfileName: String? {
         savedProfiles.first(where: { $0.id == activeProfileId })?.name
@@ -159,6 +176,7 @@ class ABMViewModel: ObservableObject {
         clientId = UserDefaults.standard.string(forKey: "clientId") ?? ""
         keyId = UserDefaults.standard.string(forKey: "keyId") ?? ""
         loadProfiles()
+        loadJamfProfiles()
     }
 
     // MARK: - Connection Profiles
@@ -335,7 +353,7 @@ class ABMViewModel: ObservableObject {
     // Get current access token
     func getCurrentAccessToken() async -> String? {
         guard let assertion = clientAssertion else { return nil }
-        
+
         do {
             return try await apiService.getAccessToken(
                 clientAssertion: assertion,
@@ -343,6 +361,137 @@ class ABMViewModel: ObservableObject {
             )
         } catch {
             return nil
+        }
+    }
+
+    // MARK: - Jamf Pro Connection
+
+    /// Connect to Jamf Pro using OAuth 2.0 Client Credentials
+    func connectToJamf() {
+        guard !jamfURL.isEmpty, !jamfClientId.isEmpty, !jamfClientSecret.isEmpty else {
+            jamfErrorMessage = "Fill in all Jamf Pro connection fields."
+            return
+        }
+
+        isJamfLoading = true
+        jamfErrorMessage = nil
+        jamfStatusMessage = nil
+
+        Task {
+            do {
+                try await jamfAPIService.authenticate(
+                    baseURL: jamfURL,
+                    clientId: jamfClientId,
+                    clientSecret: jamfClientSecret
+                )
+                isJamfConnected = true
+                jamfStatusMessage = "Connected to Jamf Pro"
+            } catch {
+                isJamfConnected = false
+                jamfErrorMessage = error.localizedDescription
+            }
+            isJamfLoading = false
+        }
+    }
+
+    /// Get a valid Jamf token, auto-refreshing if needed
+    func getJamfToken() async throws -> String {
+        try await jamfAPIService.getToken(
+            baseURL: jamfURL,
+            clientId: jamfClientId,
+            clientSecret: jamfClientSecret
+        )
+    }
+
+    /// Disconnect from Jamf Pro
+    func disconnectJamf() {
+        jamfAPIService.clearToken()
+        isJamfConnected = false
+        jamfStatusMessage = nil
+        jamfErrorMessage = nil
+    }
+
+    // MARK: - Jamf Pro Profiles
+
+    func saveJamfProfile(name: String) {
+        let profile = JamfConnectionProfile(
+            name: name,
+            jamfURL: jamfURL,
+            clientId: jamfClientId,
+            clientSecret: jamfClientSecret
+        )
+
+        if let index = jamfSavedProfiles.firstIndex(where: { $0.name == name }) {
+            let oldId = jamfSavedProfiles[index].id
+            if oldId != profile.id {
+                KeychainHelper.delete(key: "jamf-clientSecret-\(oldId.uuidString)")
+            }
+            jamfSavedProfiles[index] = profile
+        } else {
+            jamfSavedProfiles.append(profile)
+        }
+
+        KeychainHelper.save(key: "jamf-clientSecret-\(profile.id.uuidString)", value: jamfClientSecret)
+        activeJamfProfileId = profile.id
+        persistJamfProfiles()
+    }
+
+    func switchToJamfProfile(_ profile: JamfConnectionProfile) {
+        jamfURL = profile.jamfURL
+        jamfClientId = profile.clientId
+        jamfClientSecret = profile.clientSecret
+        activeJamfProfileId = profile.id
+
+        // Reset connection
+        disconnectJamf()
+        saveJamfCredentials()
+        UserDefaults.standard.set(profile.id.uuidString, forKey: "activeJamfProfileId")
+    }
+
+    func deleteJamfProfile(_ profile: JamfConnectionProfile) {
+        KeychainHelper.delete(key: "jamf-clientSecret-\(profile.id.uuidString)")
+        jamfSavedProfiles.removeAll { $0.id == profile.id }
+        if activeJamfProfileId == profile.id {
+            activeJamfProfileId = nil
+        }
+        persistJamfProfiles()
+    }
+
+    private func saveJamfCredentials() {
+        UserDefaults.standard.set(jamfURL, forKey: "jamfURL")
+        UserDefaults.standard.set(jamfClientId, forKey: "jamfClientId")
+    }
+
+    private func persistJamfProfiles() {
+        if let data = try? JSONEncoder().encode(jamfSavedProfiles) {
+            UserDefaults.standard.set(data, forKey: "jamfConnectionProfiles")
+        }
+        if let id = activeJamfProfileId {
+            UserDefaults.standard.set(id.uuidString, forKey: "activeJamfProfileId")
+        }
+    }
+
+    func loadJamfProfiles() {
+        if let data = UserDefaults.standard.data(forKey: "jamfConnectionProfiles"),
+           var profiles = try? JSONDecoder().decode([JamfConnectionProfile].self, from: data) {
+            // Hydrate secrets from Keychain
+            for i in profiles.indices {
+                if profiles[i].clientSecret.isEmpty,
+                   let secret = KeychainHelper.read(key: "jamf-clientSecret-\(profiles[i].id.uuidString)") {
+                    profiles[i].clientSecret = secret
+                }
+            }
+            jamfSavedProfiles = profiles
+        }
+
+        if let idString = UserDefaults.standard.string(forKey: "activeJamfProfileId"),
+           let id = UUID(uuidString: idString) {
+            activeJamfProfileId = id
+            if let profile = jamfSavedProfiles.first(where: { $0.id == id }) {
+                jamfURL = profile.jamfURL
+                jamfClientId = profile.clientId
+                jamfClientSecret = profile.clientSecret
+            }
         }
     }
 }

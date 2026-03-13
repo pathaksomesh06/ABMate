@@ -15,9 +15,10 @@ enum NavigationItem: String, CaseIterable, Identifiable {
     case mdmServers = "MDM Servers"
     case assign = "Assign"
     case activity = "Activity"
-    
+    case mdmSync = "MDM Sync"
+
     var id: String { rawValue }
-    
+
     var icon: String {
         switch self {
         case .dashboard: return "square.grid.2x2"
@@ -25,6 +26,7 @@ enum NavigationItem: String, CaseIterable, Identifiable {
         case .mdmServers: return "server.rack"
         case .assign: return "arrow.triangle.swap"
         case .activity: return "clock.arrow.circlepath"
+        case .mdmSync: return "arrow.triangle.2.circlepath"
         }
     }
 }
@@ -180,6 +182,8 @@ struct ContentView: View {
                     DeviceAssignmentView(viewModel: viewModel)
                 case .activity:
                     ActivityStatusView(viewModel: viewModel)
+                case .mdmSync:
+                    JamfSyncView(viewModel: viewModel)
                 }
             }
             .frame(minWidth: 600)
@@ -233,6 +237,12 @@ struct ConnectionSettingsSheet: View {
     @State private var previousPrivateKey = ""
     @State private var previousProfileId: UUID?
     @State private var previousAssertion: String?
+
+    // Jamf Pro profile management
+    @State private var jamfProfileName = ""
+    @State private var showingSaveJamfProfile = false
+    @State private var showingJamfDeleteConfirm = false
+    @State private var jamfProfileToDelete: JamfConnectionProfile?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -488,12 +498,218 @@ struct ConnectionSettingsSheet: View {
                             errorMessage: viewModel.errorMessage
                         )
                     }
+
+                    Divider()
+                        .padding(.vertical, 4)
+
+                    // MARK: Jamf Pro Connection
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Jamf Pro Connection", systemImage: "server.rack")
+                            .font(.headline)
+
+                        // Jamf Saved Profiles
+                        if !viewModel.jamfSavedProfiles.isEmpty {
+                            VStack(spacing: 8) {
+                                ForEach(viewModel.jamfSavedProfiles) { profile in
+                                    HStack(spacing: 12) {
+                                        Image(systemName: profile.id == viewModel.activeJamfProfileId ? "checkmark.circle.fill" : "circle")
+                                            .foregroundColor(profile.id == viewModel.activeJamfProfileId ? .green : .secondary)
+                                            .font(.title3)
+
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(profile.name)
+                                                .font(.system(.body, weight: .medium))
+                                            Text(profile.jamfURL.prefix(40) + (profile.jamfURL.count > 40 ? "..." : ""))
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+
+                                        Spacer()
+
+                                        if profile.id != viewModel.activeJamfProfileId {
+                                            Button("Switch") {
+                                                viewModel.switchToJamfProfile(profile)
+                                            }
+                                            .buttonStyle(.bordered)
+                                            .controlSize(.small)
+                                        } else {
+                                            Text(viewModel.isJamfConnected ? "Connected" : "Active")
+                                                .font(.caption)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(viewModel.isJamfConnected ? .green : .blue)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 4)
+                                                .background(
+                                                    Capsule().fill(viewModel.isJamfConnected ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
+                                                )
+                                        }
+
+                                        Button(action: {
+                                            jamfProfileToDelete = profile
+                                            showingJamfDeleteConfirm = true
+                                        }) {
+                                            Image(systemName: "trash")
+                                                .foregroundColor(.red.opacity(0.7))
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                    .padding(10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(profile.id == viewModel.activeJamfProfileId ? Color.green.opacity(0.05) : Color(NSColor.controlBackgroundColor))
+                                    )
+                                }
+                            }
+                        }
+
+                        // Jamf Profile Save
+                        if showingSaveJamfProfile {
+                            HStack(spacing: 8) {
+                                TextField("Jamf profile name...", text: $jamfProfileName)
+                                    .textFieldStyle(.roundedBorder)
+                                    .frame(maxWidth: 200)
+
+                                Button("Save") {
+                                    if !jamfProfileName.isEmpty {
+                                        viewModel.saveJamfProfile(name: jamfProfileName)
+                                        jamfProfileName = ""
+                                        showingSaveJamfProfile = false
+                                    }
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                                .disabled(jamfProfileName.isEmpty)
+
+                                Button("Cancel") {
+                                    showingSaveJamfProfile = false
+                                    jamfProfileName = ""
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                            }
+                        } else {
+                            HStack(spacing: 8) {
+                                Button(action: { showingSaveJamfProfile = true }) {
+                                    Label("Save Current", systemImage: "square.and.arrow.down")
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .disabled(viewModel.jamfURL.isEmpty || viewModel.jamfClientId.isEmpty || viewModel.jamfClientSecret.isEmpty)
+                            }
+                        }
+
+                        // Setup Instructions
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("Jamf Pro Setup")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("In Jamf Pro, go to **Settings > System > API Roles and Clients**.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text("1. Create an **API Role** with these privileges:")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Label("Read Computers", systemImage: "checkmark.circle.fill")
+                                    Label("Update Computers", systemImage: "checkmark.circle.fill")
+                                    Label("Read Mobile Devices", systemImage: "checkmark.circle.fill")
+                                    Label("Update Mobile Devices", systemImage: "checkmark.circle.fill")
+                                }
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundColor(.green)
+                                .padding(.leading, 12)
+                                .padding(.vertical, 4)
+
+                                Text("2. Create an **API Client**, assign the role above, and enable it.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text("3. Copy the **Client ID** and generate a **Client Secret** below.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.blue.opacity(0.05))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.blue.opacity(0.15), lineWidth: 1))
+                        )
+
+                        // Jamf Credentials
+                        VStack(spacing: 12) {
+                            CredentialField(
+                                label: "Jamf Pro URL",
+                                placeholder: "https://yourorg.jamfcloud.com",
+                                text: $viewModel.jamfURL,
+                                icon: "globe"
+                            )
+
+                            CredentialField(
+                                label: "Client ID",
+                                placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                                text: $viewModel.jamfClientId,
+                                icon: "person.badge.key"
+                            )
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Client Secret")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                HStack(spacing: 10) {
+                                    Image(systemName: "lock.fill")
+                                        .foregroundColor(.secondary)
+                                        .frame(width: 20)
+                                    SecureField("Client secret...", text: $viewModel.jamfClientSecret)
+                                        .textFieldStyle(.plain)
+                                }
+                                .padding(10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color(NSColor.controlBackgroundColor))
+                                )
+                            }
+                        }
+
+                        // Jamf Connect Button
+                        Button(action: { viewModel.connectToJamf() }) {
+                            HStack {
+                                if viewModel.isJamfLoading {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                } else {
+                                    Image(systemName: "bolt.fill")
+                                }
+                                Text(viewModel.isJamfConnected ? "Reconnect to Jamf Pro" : "Connect to Jamf Pro")
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.orange)
+                        .controlSize(.large)
+                        .disabled(viewModel.jamfURL.isEmpty || viewModel.jamfClientId.isEmpty || viewModel.jamfClientSecret.isEmpty || viewModel.isJamfLoading)
+
+                        // Jamf Status
+                        if viewModel.isJamfLoading || viewModel.jamfStatusMessage != nil || viewModel.jamfErrorMessage != nil {
+                            StatusMessageView(
+                                isLoading: viewModel.isJamfLoading,
+                                statusMessage: viewModel.jamfStatusMessage,
+                                errorMessage: viewModel.jamfErrorMessage
+                            )
+                        }
+                    }
                 }
                 .padding(20)
             }
         }
-        .frame(width: 480, height: 620)
-        .alert("Delete Profile", isPresented: $showingDeleteConfirm) {
+        .frame(width: 480, height: 780)
+        .alert("Delete ABM Profile", isPresented: $showingDeleteConfirm) {
             Button("Cancel", role: .cancel) { profileToDelete = nil }
             Button("Delete", role: .destructive) {
                 if let profile = profileToDelete {
@@ -503,6 +719,17 @@ struct ConnectionSettingsSheet: View {
             }
         } message: {
             Text("Are you sure you want to delete \"\(profileToDelete?.name ?? "")\"? This cannot be undone.")
+        }
+        .alert("Delete Jamf Profile", isPresented: $showingJamfDeleteConfirm) {
+            Button("Cancel", role: .cancel) { jamfProfileToDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let profile = jamfProfileToDelete {
+                    viewModel.deleteJamfProfile(profile)
+                    jamfProfileToDelete = nil
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete \"\(jamfProfileToDelete?.name ?? "")\"? This cannot be undone.")
         }
         .fileImporter(
             isPresented: $showingKeyImporter,
@@ -1975,4 +2202,501 @@ struct ActivityStatusView: View {
     }
 }
 
+// MARK: - MDM Sync View (Jamf Pro)
+struct JamfSyncView: View {
+    @ObservedObject var viewModel: ABMViewModel
+
+    // Search
+    @State private var serialSearch = ""
+    @State private var isSearching = false
+
+    // Results
+    @State private var asmDevice: OrgDevice?
+    @State private var asmCoverage: [AppleCareCoverage] = []
+    @State private var jamfMatch: JamfDeviceMatch?
+    @State private var searchError: String?
+    @State private var searchCompleted = false
+
+    // Sync
+    @State private var isSyncing = false
+    @State private var syncSuccess: String?
+    @State private var syncError: String?
+
+    // Editable fields for the sync payload
+    @State private var poNumber = ""
+    @State private var poDate = ""
+    @State private var vendor = ""
+    @State private var warrantyDate = ""
+    @State private var appleCareId = ""
+    @State private var leaseDate = ""
+    @State private var purchasePrice = ""
+    @State private var lifeExpectancy = ""
+    @State private var purchasingAccount = ""
+    @State private var purchasingContact = ""
+    @State private var isPurchased = true
+    @State private var isLeased = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                // Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("MDM Sync")
+                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                        Text("Sync purchasing data from ASM to Jamf Pro")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.bottom, 4)
+
+                // Connection Status
+                HStack(spacing: 16) {
+                    connectionPill(label: "ASM", connected: viewModel.isConnected, icon: "apple.logo")
+                    connectionPill(label: "Jamf Pro", connected: viewModel.isJamfConnected, icon: "server.rack")
+                }
+
+                if !viewModel.isConnected || !viewModel.isJamfConnected {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text("Both ASM and Jamf Pro connections are required. Open Connection Settings to configure.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.orange.opacity(0.1))
+                    )
+                }
+
+                // Search Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Device Lookup", systemImage: "magnifyingglass")
+                        .font(.headline)
+
+                    HStack(spacing: 12) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "barcode")
+                                .foregroundColor(.secondary)
+                            TextField("Enter serial number...", text: $serialSearch)
+                                .textFieldStyle(.plain)
+                                .font(.system(.body, design: .monospaced))
+                                .onSubmit { performSearch() }
+                        }
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(NSColor.controlBackgroundColor))
+                        )
+
+                        Button(action: performSearch) {
+                            HStack(spacing: 6) {
+                                if isSearching {
+                                    ProgressView()
+                                        .scaleEffect(0.6)
+                                } else {
+                                    Image(systemName: "magnifyingglass")
+                                }
+                                Text("Search")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(serialSearch.trimmingCharacters(in: .whitespaces).isEmpty || isSearching || !viewModel.isConnected || !viewModel.isJamfConnected)
+                    }
+
+                    Text("Searches for the device in your loaded ASM data and in Jamf Pro inventory.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                // Error
+                if let error = searchError {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(error)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.1)))
+                }
+
+                // Results
+                if searchCompleted {
+                    if asmDevice != nil || jamfMatch != nil {
+                        // Side-by-side results
+                        HStack(alignment: .top, spacing: 16) {
+                            // ASM side
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "apple.logo")
+                                        .foregroundColor(.blue)
+                                    Text("ASM Data")
+                                        .font(.headline)
+                                    Spacer()
+                                    if asmDevice != nil {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                            .font(.caption)
+                                    } else {
+                                        Text("Not Found")
+                                            .font(.caption)
+                                            .foregroundColor(.red)
+                                    }
+                                }
+
+                                if let device = asmDevice {
+                                    VStack(spacing: 8) {
+                                        syncDetailRow("Serial", device.serialNumber)
+                                        syncDetailRow("Model", device.model ?? "—")
+                                        syncDetailRow("Type", device.productType ?? "—")
+                                        syncDetailRow("Order #", device.orderNumber ?? "—")
+                                        syncDetailRow("Status", device.enrollmentState ?? "—")
+                                        syncDetailRow("Added", OrgDevice.formatDate(device.addedDate))
+                                    }
+
+                                    if !asmCoverage.isEmpty {
+                                        Divider()
+                                        Text("AppleCare Coverage")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        ForEach(asmCoverage) { cov in
+                                            VStack(spacing: 4) {
+                                                syncDetailRow("Type", cov.attributes.description ?? "—")
+                                                syncDetailRow("Status", cov.attributes.status ?? "—")
+                                                syncDetailRow("Agreement #", cov.attributes.agreementNumber ?? "—")
+                                                syncDetailRow("Ends", OrgDevice.formatDate(cov.attributes.endDateTime))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.blue.opacity(0.03))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.blue.opacity(0.15), lineWidth: 1))
+                            )
+
+                            // Jamf side
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "server.rack")
+                                        .foregroundColor(.orange)
+                                    Text("Jamf Pro Data")
+                                        .font(.headline)
+                                    Spacer()
+                                    if jamfMatch != nil {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                            .font(.caption)
+                                    } else {
+                                        Text("Not Found")
+                                            .font(.caption)
+                                            .foregroundColor(.red)
+                                    }
+                                }
+
+                                if let match = jamfMatch {
+                                    VStack(spacing: 8) {
+                                        syncDetailRow("Name", match.name)
+                                        syncDetailRow("Serial", match.serial)
+                                        syncDetailRow("Model", match.model)
+                                        syncDetailRow("Type", match.deviceType.rawValue)
+                                    }
+
+                                    if let p = match.currentPurchasing {
+                                        Divider()
+                                        Text("Current Purchasing")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        VStack(spacing: 4) {
+                                            syncDetailRow("PO #", p.poNumber ?? "—")
+                                            syncDetailRow("Vendor", p.vendor ?? "—")
+                                            syncDetailRow("Warranty", p.warrantyDate ?? "—")
+                                            syncDetailRow("AppleCare ID", p.appleCareId ?? "—")
+                                            syncDetailRow("Price", p.purchasePrice ?? "—")
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.orange.opacity(0.03))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.orange.opacity(0.15), lineWidth: 1))
+                            )
+                        }
+
+                        // Sync Form — editable fields to push
+                        if asmDevice != nil && jamfMatch != nil {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.right.circle.fill")
+                                        .foregroundColor(.green)
+                                    Text("Data to Sync to Jamf Pro")
+                                        .font(.headline)
+                                }
+
+                                Text("Review and edit the values below before pushing to Jamf. Fields are pre-populated from ASM data.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                                    syncField("PO Number", $poNumber)
+                                    syncField("PO Date", $poDate)
+                                    syncField("Vendor", $vendor)
+                                    syncField("Warranty Expiration", $warrantyDate)
+                                    syncField("AppleCare ID", $appleCareId)
+                                    syncField("Lease Expiration", $leaseDate)
+                                    syncField("Purchase Price", $purchasePrice)
+                                    syncField("Life Expectancy (years)", $lifeExpectancy)
+                                    syncField("Purchasing Account", $purchasingAccount)
+                                    syncField("Purchasing Contact", $purchasingContact)
+                                }
+
+                                HStack(spacing: 16) {
+                                    Toggle("Purchased", isOn: $isPurchased)
+                                    Toggle("Leased", isOn: $isLeased)
+                                }
+                                .font(.subheadline)
+
+                                // Sync Button
+                                HStack {
+                                    Spacer()
+                                    Button(action: performSync) {
+                                        HStack(spacing: 8) {
+                                            if isSyncing {
+                                                ProgressView()
+                                                    .scaleEffect(0.7)
+                                            } else {
+                                                Image(systemName: "arrow.triangle.2.circlepath")
+                                            }
+                                            Text("Push to Jamf Pro")
+                                        }
+                                        .padding(.horizontal, 24)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.green)
+                                    .controlSize(.large)
+                                    .disabled(isSyncing)
+                                    Spacer()
+                                }
+
+                                // Sync Status
+                                if let success = syncSuccess {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text(success)
+                                            .font(.subheadline)
+                                    }
+                                    .padding(12)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.green.opacity(0.1)))
+                                }
+
+                                if let error = syncError {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.red)
+                                        Text(error)
+                                            .font(.subheadline)
+                                    }
+                                    .padding(12)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.red.opacity(0.1)))
+                                }
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.green.opacity(0.03))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.green.opacity(0.15), lineWidth: 1))
+                            )
+                        }
+                    }
+                }
+            }
+            .padding(24)
+            .padding(.bottom, 80)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func connectionPill(label: String, connected: Bool, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+            Text(label)
+                .font(.system(size: 13, weight: .medium))
+            Circle()
+                .fill(connected ? Color.green : Color.red)
+                .frame(width: 8, height: 8)
+            Text(connected ? "Connected" : "Disconnected")
+                .font(.system(size: 11))
+                .foregroundColor(connected ? .green : .red)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(connected ? Color.green.opacity(0.06) : Color.red.opacity(0.06))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(connected ? Color.green.opacity(0.2) : Color.red.opacity(0.2), lineWidth: 1))
+        )
+    }
+
+    private func syncDetailRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(width: 90, alignment: .trailing)
+            Text(value)
+                .font(.system(.caption, design: .monospaced))
+                .lineLimit(1)
+            Spacer()
+        }
+    }
+
+    private func syncField(_ label: String, _ binding: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            TextField(label, text: binding)
+                .textFieldStyle(.roundedBorder)
+                .font(.system(.body, design: .monospaced))
+        }
+    }
+
+    // MARK: - Search
+
+    private func performSearch() {
+        let serial = serialSearch.trimmingCharacters(in: .whitespaces).uppercased()
+        guard !serial.isEmpty else { return }
+
+        isSearching = true
+        searchError = nil
+        searchCompleted = false
+        asmDevice = nil
+        asmCoverage = []
+        jamfMatch = nil
+        syncSuccess = nil
+        syncError = nil
+
+        // Reset editable fields
+        poNumber = ""
+        poDate = ""
+        vendor = ""
+        warrantyDate = ""
+        appleCareId = ""
+        leaseDate = ""
+        purchasePrice = ""
+        lifeExpectancy = ""
+        purchasingAccount = ""
+        purchasingContact = ""
+        isPurchased = true
+        isLeased = false
+
+        Task {
+            // 1. Look up in ASM (from loaded devices)
+            let foundASM = viewModel.devices.first(where: { $0.serialNumber.uppercased() == serial })
+            asmDevice = foundASM
+
+            // 2. Fetch AppleCare coverage if ASM device found
+            if let device = foundASM {
+                if let token = await viewModel.getCurrentAccessToken() {
+                    do {
+                        asmCoverage = try await viewModel.apiService.getAppleCareCoverage(
+                            deviceId: device.id,
+                            accessToken: token
+                        )
+                    } catch {
+                        print("AppleCare lookup failed: \(error)")
+                        // Non-fatal — continue without coverage
+                    }
+                }
+            }
+
+            // 3. Look up in Jamf Pro
+            do {
+                let token = try await viewModel.getJamfToken()
+                jamfMatch = try await viewModel.jamfAPIService.findDeviceBySerial(serial, token: token)
+            } catch {
+                searchError = "Jamf lookup failed: \(error.localizedDescription)"
+            }
+
+            if asmDevice == nil && jamfMatch == nil && searchError == nil {
+                searchError = "Serial \"\(serial)\" not found in ASM data or Jamf Pro inventory."
+            }
+
+            // Pre-populate sync fields from ASM data
+            if let device = foundASM {
+                poNumber = device.orderNumber ?? ""
+            }
+
+            // Use AppleCare coverage for warranty info
+            if let activeCoverage = asmCoverage.first(where: { $0.attributes.status == "ACTIVE" }) ?? asmCoverage.first {
+                appleCareId = activeCoverage.attributes.agreementNumber ?? ""
+                if let endDate = activeCoverage.attributes.endDateTime {
+                    warrantyDate = String(endDate.prefix(10))
+                }
+            }
+
+            // Default vendor
+            if vendor.isEmpty { vendor = "Apple" }
+
+            searchCompleted = true
+            isSearching = false
+        }
+    }
+
+    // MARK: - Sync
+
+    private func performSync() {
+        guard let match = jamfMatch else { return }
+
+        isSyncing = true
+        syncSuccess = nil
+        syncError = nil
+
+        let purchasing = JamfPurchasing(
+            purchased: isPurchased,
+            leased: isLeased,
+            poNumber: poNumber.isEmpty ? nil : poNumber,
+            poDate: poDate.isEmpty ? nil : poDate,
+            vendor: vendor.isEmpty ? nil : vendor,
+            warrantyDate: warrantyDate.isEmpty ? nil : warrantyDate,
+            appleCareId: appleCareId.isEmpty ? nil : appleCareId,
+            leaseDate: leaseDate.isEmpty ? nil : leaseDate,
+            purchasePrice: purchasePrice.isEmpty ? nil : purchasePrice,
+            lifeExpectancy: lifeExpectancy.isEmpty ? nil : Int(lifeExpectancy),
+            purchasingAccount: purchasingAccount.isEmpty ? nil : purchasingAccount,
+            purchasingContact: purchasingContact.isEmpty ? nil : purchasingContact
+        )
+
+        Task {
+            do {
+                let token = try await viewModel.getJamfToken()
+                try await viewModel.jamfAPIService.updateDevicePurchasing(
+                    match: match,
+                    purchasing: purchasing,
+                    token: token
+                )
+                syncSuccess = "Successfully synced purchasing data to Jamf Pro for \(match.serial) (\(match.name))."
+            } catch {
+                syncError = "Sync failed: \(error.localizedDescription)"
+            }
+            isSyncing = false
+        }
+    }
+}
 
