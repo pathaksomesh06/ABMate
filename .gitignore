@@ -94,3 +94,4 @@ test_*.sh
 
 # Logs
 *.log
+ABMate.xcodeproj/project.pbxproj
