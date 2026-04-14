@@ -49,7 +49,7 @@
 ## Installation
 
 ### Option 1: Download Release
-Download the latest release from the [Releases](https://github.com/pathaksomesh06/ABMate/releases) page.
+Download the latest release from the [Releases](https://github.com/pathaksomesh06/ABMate/releases/tag/v2.0) page.
 
 ### Option 2: Build from Source
 1. Clone the repository:
@@ -171,7 +171,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Somesh Pathak**
 - GitHub: [@pathaksomesh06](https://github.com/pathaksomesh06)
-- Blog: [Intune in Real Life](https://intuneinreallife.com)
+- Blog: [Intune in Real Life](https://www.intuneirl.com/)
 
 ## Acknowledgments
 
