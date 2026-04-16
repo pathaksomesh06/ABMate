@@ -1,3 +1,4 @@
+<img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 31 30" src="https://github.com/user-attachments/assets/9fb62b6f-4245-4c73-bfa6-1bb2dcd2857d" />
 # ABMate
 
 <p align="center">
@@ -24,23 +25,59 @@
 
 **ABMate** is a native macOS application built with SwiftUI that provides a modern, user-friendly interface for interacting with the Apple Business Manager (ABM) and Apple School Manager (ASM) APIs. It streamlines device management workflows by replacing complex API calls with an intuitive GUI.
 
-## Features
+## ✨ New Features
 
-- 🖥️ **Device Management** — View, search, sort, and filter all enrolled devices with real-time sync status indicators
-- 📊 **Dashboard** — At-a-glance overview with device breakdown, inventory comparison hero section, auto-run on MDM connect, clickable MDM server count, and elevated Export/Activity controls
-- 🔄 **Device Assignment** — Bulk assign/unassign devices to MDM servers with multi-filter support (OS, enrollment status, MDM availability, sync status)
-- 🔁 **Inventory Sync** — Compare and push purchasing data (PO, vendor, warranty, AppleCare) from ASM/ABM to Jamf Pro with single-device lookup, bulk comparison, selective sync, test modes, retry, cancel, and exportable sync reports
-- 📱 **Mobile Device Support** — Full purchasing sync for mobile devices via Jamf Classic API, including per-device purchasing data fetch for accurate comparison
-- 📤 **CSV Export** — Export filtered device lists from both Devices and Assign views
-- 🔐 **Secure Authentication** — JWT-based ABM/ASM authentication and OAuth 2.0 Jamf Pro authentication, with all credentials stored in the macOS Keychain
-- 🔗 **Connection Profiles** — Save and switch between multiple ABM/ASM and Jamf Pro connections
-- ✅ **AppleCare Coverage** — Look up warranty status, coverage dates, and agreement numbers per device
-- 📋 **Activity History** — Persistent, filterable audit trail of connections, syncs, assignments, and exports with sanitized data written to disk
-- 🔔 **Toast Notifications** — Auto-dismissing status notifications for connection events, sync results, and errors
+### 🎨 Modern SwiftUI Interface
+- **Completely redesigned UI** with material-style cards, gradient backgrounds, and smooth staggered animations
+- **NavigationSplitView layout** with a persistent sidebar for quick access to Dashboard, Devices, MDM Servers, Assign, and Activity views
+- **Live connection badge** showing real-time ABM/ASM connection status
+- **New app icon** reflecting the ABMate brand
+
+### 📊 Dashboard
+- At-a-glance overview of total devices, MDM servers, and connection status
+- Device breakdown by type (Mac, iPhone, iPad, Apple TV)
+- Quick-action buttons for common workflows
+
+### 🏫 Dual-Platform Support
+- Full support for both **Apple Business** and **Apple School Manager**
+- Seamlessly switch between platforms with platform-specific API endpoints, OAuth scopes, and branding
+- Credentials and platform selection persist across sessions
+
+### ✅ AppleCare Coverage Lookup
+- Check warranty and coverage status for any enrolled device
+- View coverage type, end date, repair coverage, and technical support status
+
+### 🔄 Device Assignment & Management
+- Bulk assign or unassign devices to MDM servers
+- Real-time progress tracking for batch operations
+- Activity ID tracking with status polling (status, sub-status, timestamps)
+
+### 📋 Activity Tracking
+- Dedicated Activity view to monitor batch operation progress
+- Check status of any activity by ID
+
+### 📤 CSV Export
+- Export device lists to CSV for reporting and auditing
+
+### 🆕 New Apple Business Features — Complete API Coverage
+Apple Business Manager's latest expansion brings powerful new capabilities. ABMate v2.0 is the first native macOS app with full support:
+
+- **Users & User Groups** — Manage Managed Apple IDs and organizational structures at scale
+- **Apps & Books** — Browse your entire VPP catalog with full metadata (supports Content Token for complete visibility)
+- **Packages** — View and manage custom macOS packages
+- **Blueprints** — Inspect automated enrollment configurations for zero-touch deployment (read-only)
+- **Configurations** — Review device configuration profiles (read-only)
+- **Audit Events** — Complete admin activity tracking with time-range filtering for compliance
+- **MDM Enrolled Devices** — Detailed enrollment analytics and device information
+
+<img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 31 30" src="https://github.com/user-attachments/assets/c44fb11a-cc3f-43bd-9ecb-26dd801a19c6" />
+<img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 32 16" src="https://github.com/user-attachments/assets/5260a171-add4-4699-9461-a08e8c53b7c7" />
+<img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 32 19" src="https://github.com/user-attachments/assets/71078c6f-1894-4466-a348-ef774698b98e" />
+<img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 32 13" src="https://github.com/user-attachments/assets/d39d4b70-fb4d-45e5-98d4-0c146cc8f836" />
 
 ## Requirements
 
-- macOS 14.0 (Sonoma) or later
+- macOS 15.5 or later
 - Xcode 15.0 or later (for building from source)
 - Apple Business Manager or Apple School Manager account
 - ABM API credentials (Client ID, Key ID, Private Key)
