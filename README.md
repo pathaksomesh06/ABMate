@@ -69,7 +69,6 @@ Apple Business Manager's latest expansion brings powerful new capabilities. ABMa
 - **Audit Events** — Complete admin activity tracking with time-range filtering for compliance
 - **MDM Enrolled Devices** — Detailed enrollment analytics and device information
 
-<img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 31 30" src="https://github.com/user-attachments/assets/9fb62b6f-4245-4c73-bfa6-1bb2dcd2857d" />
 <img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 31 30" src="https://github.com/user-attachments/assets/c44fb11a-cc3f-43bd-9ecb-26dd801a19c6" />
 <img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 32 16" src="https://github.com/user-attachments/assets/5260a171-add4-4699-9461-a08e8c53b7c7" />
 <img width="1012" height="814" alt="Screenshot 2026-04-16 at 14 32 19" src="https://github.com/user-attachments/assets/71078c6f-1894-4466-a348-ef774698b98e" />
