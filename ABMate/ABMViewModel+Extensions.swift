@@ -20,9 +20,10 @@ extension ABMViewModel {
             do {
                 let token = try await apiService.getAccessToken(
                     clientAssertion: assertion,
-                    clientId: clientId
+                    clientId: clientId,
+                    platform: platform
                 )
-                mdmServers = try await apiService.fetchMDMServers(accessToken: token)
+                mdmServers = try await apiService.fetchMDMServers(accessToken: token, platform: platform)
                 statusMessage = "Fetched \(mdmServers.count) MDM servers"
             } catch {
                 errorMessage = "Error: \(error.localizedDescription)"
@@ -38,10 +39,11 @@ extension ABMViewModel {
         do {
             let token = try await apiService.getAccessToken(
                 clientAssertion: assertion,
-                clientId: clientId
+                clientId: clientId,
+                platform: platform
             )
             
-            if let serverId = try await apiService.getAssignedServer(deviceId: deviceId, accessToken: token) {
+            if let serverId = try await apiService.getAssignedServer(deviceId: deviceId, accessToken: token, platform: platform) {
                 // Find server name from mdmServers
                 if let server = mdmServers.first(where: { $0.id == serverId }) {
                     return server.attributes.serverName
@@ -58,17 +60,18 @@ extension ABMViewModel {
     // Get AppleCare Coverage for a device
     func getAppleCareCoverage(deviceId: String) async -> AppleCareCoverage? {
         guard let assertion = clientAssertion else {
-            await MainActor.run { errorMessage = "Connect to ABM first" }
+            await MainActor.run { errorMessage = "Connect to \(platform.displayName) first" }
             return nil
         }
         
         do {
             let token = try await apiService.getAccessToken(
                 clientAssertion: assertion,
-                clientId: clientId
+                clientId: clientId,
+                platform: platform
             )
             
-            let coverage = try await apiService.getAppleCareCoverage(deviceId: deviceId, accessToken: token)
+            let coverage = try await apiService.getAppleCareCoverage(deviceId: deviceId, accessToken: token, platform: platform)
             print("ViewModel: AppleCare coverage retrieved successfully")
             return coverage
         } catch {
@@ -85,9 +88,10 @@ extension ABMViewModel {
         do {
             let token = try await apiService.getAccessToken(
                 clientAssertion: assertion,
-                clientId: clientId
+                clientId: clientId,
+                platform: platform
             )
-            let deviceIds = try await apiService.getDevicesForMDM(mdmId: mdmId, accessToken: token)
+            let deviceIds = try await apiService.getDevicesForMDM(mdmId: mdmId, accessToken: token, platform: platform)
             statusMessage = "MDM has \(deviceIds.count) devices"
         } catch {
             errorMessage = "Error: \(error.localizedDescription)"
@@ -98,7 +102,7 @@ extension ABMViewModel {
     func assignDevices(deviceIds: [String], mdmId: String?) async {
         guard let assertion = clientAssertion else {
             await MainActor.run {
-                errorMessage = "Connect to ABM first"
+                errorMessage = "Connect to \(platform.displayName) first"
             }
             return
         }
@@ -112,12 +116,14 @@ extension ABMViewModel {
         do {
             let token = try await apiService.getAccessToken(
                 clientAssertion: assertion,
-                clientId: clientId
+                clientId: clientId,
+                platform: platform
             )
             let activityId = try await apiService.assignDevices(
                 deviceIds: deviceIds,
                 mdmId: mdmId,
-                accessToken: token
+                accessToken: token,
+                platform: platform
             )
             
             let action = mdmId != nil ? "assigned" : "unassigned"
@@ -141,7 +147,7 @@ extension ABMViewModel {
     func checkActivityStatus(activityId: String) async {
         guard let assertion = clientAssertion else {
             await MainActor.run {
-                errorMessage = "Connect to ABM first"
+                errorMessage = "Connect to \(platform.displayName) first"
             }
             return
         }
@@ -155,11 +161,13 @@ extension ABMViewModel {
         do {
             let token = try await apiService.getAccessToken(
                 clientAssertion: assertion,
-                clientId: clientId
+                clientId: clientId,
+                platform: platform
             )
             let status = try await apiService.checkActivityStatus(
                 activityId: activityId,
-                accessToken: token
+                accessToken: token,
+                platform: platform
             )
             
             await MainActor.run {

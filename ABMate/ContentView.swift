@@ -8,6 +8,26 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+// MARK: - Theme
+private enum AppTheme {
+    static let accent = Color(red: 0.23, green: 0.45, blue: 0.96)
+    static let accentSoft = Color(red: 0.42, green: 0.62, blue: 0.98)
+    static let success = Color(red: 0.22, green: 0.71, blue: 0.45)
+    static let warning = Color(red: 0.95, green: 0.62, blue: 0.18)
+    static let error = Color(red: 0.91, green: 0.31, blue: 0.24)
+    static let info = Color(red: 0.32, green: 0.58, blue: 0.98)
+
+    static let backgroundGradient = LinearGradient(
+        colors: [
+            Color(red: 0.95, green: 0.97, blue: 1.0),
+            Color(red: 0.93, green: 0.95, blue: 0.98),
+            Color(red: 0.91, green: 0.94, blue: 0.98)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+}
+
 // MARK: - Navigation
 enum NavigationItem: String, CaseIterable, Identifiable {
     case dashboard = "Dashboard"
@@ -15,6 +35,12 @@ enum NavigationItem: String, CaseIterable, Identifiable {
     case mdmServers = "MDM Servers"
     case assign = "Assign"
     case activity = "Activity"
+    // ABM-only
+    case users = "Users"
+    case apps = "Apps"
+    case blueprints = "Blueprints"
+    case configurations = "Configurations"
+    case auditEvents = "Audit Events"
     
     var id: String { rawValue }
     
@@ -25,7 +51,80 @@ enum NavigationItem: String, CaseIterable, Identifiable {
         case .mdmServers: return "server.rack"
         case .assign: return "arrow.triangle.swap"
         case .activity: return "clock.arrow.circlepath"
+        case .users: return "person.2"
+        case .apps: return "app.badge"
+        case .blueprints: return "doc.text.magnifyingglass"
+        case .configurations: return "gearshape.2"
+        case .auditEvents: return "list.bullet.clipboard"
         }
+    }
+    
+    /// Whether this item requires Apple Business Manager (not available in ASM).
+    var isABMOnly: Bool {
+        switch self {
+        case .users, .apps, .blueprints, .configurations, .auditEvents:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    /// Returns navigation items available for the given platform.
+    static func items(for platform: ApplePlatform) -> [NavigationItem] {
+        allCases.filter { !$0.isABMOnly || platform == .business }
+    }
+}
+
+private struct MaterialCardStyle: ViewModifier {
+    let cornerRadius: CGFloat
+    let material: Material
+    let strokeOpacity: Double
+    let shadowOpacity: Double
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(material)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(Color.white.opacity(strokeOpacity), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(shadowOpacity), radius: 10, x: 0, y: 4)
+    }
+}
+
+private extension View {
+    func materialCard(
+        cornerRadius: CGFloat = 12,
+        material: Material = .regularMaterial,
+        strokeOpacity: Double = 0.12,
+        shadowOpacity: Double = 0.08
+    ) -> some View {
+        modifier(MaterialCardStyle(
+            cornerRadius: cornerRadius,
+            material: material,
+            strokeOpacity: strokeOpacity,
+            shadowOpacity: shadowOpacity
+        ))
+    }
+
+    func materialInsetField(cornerRadius: CGFloat = 8) -> some View {
+        background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+        )
+    }
+
+    func staggeredAppear(isVisible: Bool, delay: Double) -> some View {
+        opacity(isVisible ? 1 : 0)
+            .offset(y: isVisible ? 0 : 10)
+            .animation(.easeOut(duration: 0.35).delay(delay), value: isVisible)
     }
 }
 
@@ -37,14 +136,24 @@ struct ContentView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .doubleColumn
     
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
+        ZStack {
+            AppTheme.backgroundGradient
+                .ignoresSafeArea()
+
+            Circle()
+                .fill(AppTheme.accentSoft.opacity(0.18))
+                .frame(width: 520, height: 520)
+                .blur(radius: 70)
+                .offset(x: 240, y: -240)
+
+            NavigationSplitView(columnVisibility: $columnVisibility) {
             // Sidebar
             VStack(spacing: 0) {
                 // App Header
                 HStack(spacing: 10) {
                     Image(systemName: "apple.terminal")
                         .font(.title2)
-                        .foregroundStyle(.blue.gradient)
+                        .foregroundStyle(AppTheme.accent.gradient)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("ABMate")
@@ -52,6 +161,10 @@ struct ContentView: View {
                             .fontWeight(.semibold)
                             .lineLimit(1)
                         Text("v1.0")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        Text(viewModel.platform.shortName)
                             .font(.caption2)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
@@ -69,7 +182,7 @@ struct ContentView: View {
                     .padding(.horizontal, 12)
                 
                 // Navigation List
-                List(NavigationItem.allCases, selection: $selectedNavItem) { item in
+                List(NavigationItem.items(for: viewModel.platform), selection: $selectedNavItem) { item in
                     NavigationLink(value: item) {
                         Label(item.rawValue, systemImage: item.icon)
                     }
@@ -112,6 +225,16 @@ struct ContentView: View {
                     DeviceAssignmentView(viewModel: viewModel)
                 case .activity:
                     ActivityStatusView(viewModel: viewModel)
+                case .users:
+                    UsersView(viewModel: viewModel)
+                case .apps:
+                    AppsView(viewModel: viewModel)
+                case .blueprints:
+                    BlueprintsView(viewModel: viewModel)
+                case .configurations:
+                    ConfigurationsView(viewModel: viewModel)
+                case .auditEvents:
+                    AuditEventsView(viewModel: viewModel)
                 }
             }
             .frame(minWidth: 600)
@@ -124,6 +247,8 @@ struct ContentView: View {
         .sheet(isPresented: $showingSettings) {
             ConnectionSettingsSheet(viewModel: viewModel)
         }
+        }
+        .tint(AppTheme.accent)
     }
 }
 
@@ -134,7 +259,7 @@ struct ConnectionBadge: View {
     var body: some View {
         HStack(spacing: 4) {
             Circle()
-                .fill(isConnected ? Color.green : Color.orange)
+                .fill(isConnected ? AppTheme.success : AppTheme.warning)
                 .frame(width: 6, height: 6)
             Text(isConnected ? "Connected" : "Offline")
                 .font(.system(size: 10, weight: .medium))
@@ -144,7 +269,7 @@ struct ConnectionBadge: View {
         .padding(.vertical, 3)
         .background(
             Capsule()
-                .fill(isConnected ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+                .fill(isConnected ? AppTheme.success.opacity(0.12) : AppTheme.warning.opacity(0.12))
         )
     }
 }
@@ -176,6 +301,21 @@ struct ConnectionSettingsSheet: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                    // Platform Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label("Platform", systemImage: "building.2")
+                            .font(.headline)
+                        Picker("Platform", selection: $viewModel.platform) {
+                            ForEach(ApplePlatform.allCases) { platform in
+                                Text(platform.displayName)
+                                    .tag(platform)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .padding(16)
+                    .materialCard(cornerRadius: 12, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.04)
+
                     // Credentials Section
                     VStack(alignment: .leading, spacing: 16) {
                         Label("API Credentials", systemImage: "key.fill")
@@ -219,18 +359,20 @@ struct ConnectionSettingsSheet: View {
                                     }
                                     .padding(12)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(Color(NSColor.controlBackgroundColor))
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .fill(.ultraThinMaterial)
                                     )
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(viewModel.privateKey.isEmpty ? Color.blue.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .stroke(viewModel.privateKey.isEmpty ? AppTheme.info.opacity(0.35) : AppTheme.success.opacity(0.35), lineWidth: 1)
                                     )
                                 }
                                 .buttonStyle(.plain)
                             }
                         }
                     }
+                    .padding(16)
+                    .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     
                     Divider()
                     
@@ -252,7 +394,7 @@ struct ConnectionSettingsSheet: View {
                         }) {
                             HStack {
                                 Image(systemName: "bolt.fill")
-                                Text("Connect to ABM")
+                                Text("Connect to \(viewModel.platform.displayName)")
                             }
                             .frame(maxWidth: .infinity)
                         }
@@ -260,19 +402,24 @@ struct ConnectionSettingsSheet: View {
                         .controlSize(.large)
                         .disabled(viewModel.clientAssertion == nil || viewModel.isLoading)
                     }
+                    .padding(16)
+                    .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     
                     // Status Messages
-                    if viewModel.isLoading || viewModel.statusMessage != nil || viewModel.errorMessage != nil {
+                    if viewModel.isLoading || viewModel.statusMessage != nil || viewModel.errorMessage != nil || viewModel.warningMessage != nil {
                         StatusMessageView(
                             isLoading: viewModel.isLoading,
                             statusMessage: viewModel.statusMessage,
-                            errorMessage: viewModel.errorMessage
+                            errorMessage: viewModel.errorMessage,
+                            warningMessage: viewModel.warningMessage,
+                            fetchProgress: viewModel.fetchProgress
                         )
                     }
                 }
                 .padding(20)
             }
         }
+        .background(.ultraThinMaterial)
         .frame(width: 480, height: 520)
         .fileImporter(
             isPresented: $showingKeyImporter,
@@ -290,7 +437,7 @@ struct ConnectionSettingsSheet: View {
         }
         .onChange(of: viewModel.statusMessage) { oldValue, newValue in
             // Auto-close when successfully connected
-            if let message = newValue, message.contains("Connected to ABM") {
+            if let message = newValue, message.contains("Connected to") {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     dismiss()
                 }
@@ -312,6 +459,7 @@ struct ConnectionSettingsSheet: View {
             }
         }
     }
+    
 }
 
 // MARK: - Credential Field
@@ -335,10 +483,7 @@ struct CredentialField: View {
                     .textFieldStyle(.plain)
             }
             .padding(10)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(NSColor.controlBackgroundColor))
-            )
+            .materialInsetField(cornerRadius: 8)
         }
     }
 }
@@ -348,6 +493,8 @@ struct StatusMessageView: View {
     let isLoading: Bool
     let statusMessage: String?
     let errorMessage: String?
+    let warningMessage: String?
+    var fetchProgress: Int = 0
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -355,25 +502,41 @@ struct StatusMessageView: View {
                 HStack(spacing: 8) {
                     ProgressView()
                         .scaleEffect(0.7)
-                    Text("Connecting...")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    if fetchProgress > 0 {
+                        Text("Fetching devices… (\(fetchProgress.formatted()) so far)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Connecting...")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             
-            if let status = statusMessage {
+            if let status = statusMessage, !isLoading {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundColor(AppTheme.success)
                     Text(status)
                         .font(.subheadline)
+                }
+            }
+            
+            if let warning = warningMessage {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(AppTheme.warning)
+                    Text(warning)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
             }
             
             if let error = errorMessage {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(AppTheme.error)
                     Text(error)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -382,10 +545,7 @@ struct StatusMessageView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.1))
-        )
+        .materialCard(cornerRadius: 10, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.03)
     }
 }
 
@@ -395,6 +555,7 @@ struct DashboardView: View {
     let onOpenSettings: () -> Void
     let onNavigateToActivity: () -> Void
     @State private var showingExporter = false
+    @State private var hasAppeared = false
     
     var body: some View {
         ScrollView {
@@ -404,7 +565,7 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Dashboard")
                             .font(.system(size: 34, weight: .bold, design: .rounded))
-                        Text("Overview of your Apple Business Manager")
+                        Text("Overview of your \(viewModel.platform.displayName)")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -442,8 +603,45 @@ struct DashboardView: View {
                         icon: "server.rack",
                         color: .purple
                     )
+                    
+                    if viewModel.platform.supportsUsers {
+                        StatCard(
+                            title: "Users",
+                            value: "\(viewModel.users.count)",
+                            icon: "person.2",
+                            color: .orange
+                        )
+                    }
+                    
+                    if viewModel.platform.supportsApps {
+                        StatCard(
+                            title: "Apps",
+                            value: "\(viewModel.apps.count)",
+                            icon: "app.badge",
+                            color: .green
+                        )
+                    }
+                    
+                    if viewModel.platform.supportsBlueprints {
+                        StatCard(
+                            title: "Blueprints",
+                            value: "\(viewModel.blueprints.count)",
+                            icon: "doc.text.magnifyingglass",
+                            color: .teal
+                        )
+                    }
+                    
+                    if viewModel.platform.supportsConfigurations {
+                        StatCard(
+                            title: "Configurations",
+                            value: "\(viewModel.configurations.count)",
+                            icon: "gearshape.2",
+                            color: .indigo
+                        )
+                    }
                 }
                 .padding(.horizontal, 2) // Small padding to prevent shadow clipping
+                .staggeredAppear(isVisible: hasAppeared, delay: 0.05)
                 
                 // Device Breakdown
                 if !viewModel.devices.isEmpty {
@@ -488,11 +686,8 @@ struct DashboardView: View {
                         }
                     }
                     .padding(20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(NSColor.controlBackgroundColor))
-                            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-                    )
+                    .materialCard(cornerRadius: 16, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.06)
+                    .staggeredAppear(isVisible: hasAppeared, delay: 0.12)
                 }
                 
                 // Quick Actions
@@ -522,12 +717,13 @@ struct DashboardView: View {
                     }
                 }
                 .padding(.horizontal, 2) // Small padding to prevent shadow clipping
+                .staggeredAppear(isVisible: hasAppeared, delay: 0.18)
                 
                 // Status Message
                 if let status = viewModel.statusMessage {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(AppTheme.success)
                         Text(status)
                             .font(.subheadline)
                         Spacer()
@@ -542,10 +738,10 @@ struct DashboardView: View {
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.green.opacity(0.1))
+                            .fill(AppTheme.success.opacity(0.12))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                                    .stroke(AppTheme.success.opacity(0.35), lineWidth: 1)
                             )
                     )
                 }
@@ -554,7 +750,7 @@ struct DashboardView: View {
                 if let error = viewModel.errorMessage {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
+                            .foregroundColor(AppTheme.error)
                         Text(error)
                             .font(.subheadline)
                         Spacer()
@@ -569,10 +765,10 @@ struct DashboardView: View {
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.orange.opacity(0.1))
+                            .fill(AppTheme.error.opacity(0.12))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                                    .stroke(AppTheme.error.opacity(0.35), lineWidth: 1)
                             )
                     )
                 }
@@ -584,14 +780,14 @@ struct DashboardView: View {
                             .font(.system(size: 24))
                             .foregroundStyle(.orange.gradient)
                             .frame(width: 44, height: 44)
-                            .background(Circle().fill(Color.orange.opacity(0.1)))
+                            .background(Circle().fill(AppTheme.warning.opacity(0.15)))
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Connect to Apple Business Manager")
+                            Text("Connect to \(viewModel.platform.displayName)")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                             
-                            Text("Configure your ABM API credentials")
+                            Text("Configure your \(viewModel.platform.displayName) API credentials")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -603,10 +799,7 @@ struct DashboardView: View {
                             .controlSize(.small)
                     }
                     .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(NSColor.controlBackgroundColor))
-                    )
+                    .materialCard(cornerRadius: 10, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.03)
                 }
             }
             .padding(.horizontal, 24)
@@ -614,7 +807,10 @@ struct DashboardView: View {
             .padding(.bottom, 24)
         }
         .scrollContentBackground(.hidden)
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(.ultraThinMaterial)
+        .onAppear {
+            hasAppeared = true
+        }
         .fileExporter(
             isPresented: $showingExporter,
             document: CSVDocument(devices: viewModel.devices),
@@ -637,6 +833,7 @@ struct StatCard: View {
     let value: String
     let icon: String
     let color: Color
+    @State private var isHovering = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -660,14 +857,13 @@ struct StatCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(NSColor.controlBackgroundColor))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(color.opacity(0.2), lineWidth: 1)
-        )
+        .materialCard(cornerRadius: 12, material: .regularMaterial, strokeOpacity: 0.18, shadowOpacity: 0.06)
+        .scaleEffect(isHovering ? 1.01 : 1)
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.18)) {
+                isHovering = hovering
+            }
+        }
     }
 }
 
@@ -698,7 +894,8 @@ struct DeviceTypeCard: View {
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(12)
+        .materialCard(cornerRadius: 12, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.03)
     }
 }
 
@@ -708,6 +905,7 @@ struct QuickActionButton: View {
     let icon: String
     let color: Color
     let action: () -> Void
+    @State private var isHovering = false
     
     var body: some View {
         Button(action: action) {
@@ -732,13 +930,16 @@ struct QuickActionButton: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 8)
             .padding(.vertical, 20)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(NSColor.controlBackgroundColor))
-                    .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
-            )
+            .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.16, shadowOpacity: 0.08)
         }
         .buttonStyle(.plain)
+        .scaleEffect(isHovering ? 1.02 : 1)
+        .shadow(color: .black.opacity(isHovering ? 0.12 : 0.06), radius: isHovering ? 12 : 8, x: 0, y: 4)
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.18)) {
+                isHovering = hovering
+            }
+        }
     }
 }
 
@@ -771,11 +972,7 @@ struct EmptyStateCard: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.05))
-                .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-        )
+        .materialCard(cornerRadius: 14, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.04)
     }
 }
 
@@ -852,10 +1049,7 @@ struct DevicesView: View {
                         }
                         .padding(8)
                         .frame(width: 220)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(NSColor.controlBackgroundColor))
-                        )
+                        .materialInsetField(cornerRadius: 8)
                         
                         // Filter
                         Picker("OS", selection: $filterOS) {
@@ -881,7 +1075,7 @@ struct DevicesView: View {
                 }
             }
             .padding(20)
-            .background(Color(NSColor.windowBackgroundColor))
+            .background(.ultraThinMaterial)
             
             Divider()
             
@@ -891,7 +1085,7 @@ struct DevicesView: View {
                 ContentUnavailableView(
                     "No Devices",
                     systemImage: "laptopcomputer.and.iphone",
-                    description: Text("Connect to ABM to load your devices")
+                    description: Text("Connect to \(viewModel.platform.displayName) to load your devices")
                 )
                 Spacer()
             } else if filteredDevices.isEmpty {
@@ -925,7 +1119,7 @@ struct DevicesView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(Color(NSColor.controlBackgroundColor))
+            .background(.thinMaterial)
         }
         .sheet(isPresented: $showingDetails) {
             if let device = selectedDevice {
@@ -964,8 +1158,8 @@ struct DeviceRow: View {
     
     var statusColor: Color {
         switch device.enrollmentState?.uppercased() {
-        case "ASSIGNED": return .green
-        case "UNASSIGNED": return .orange
+        case "ASSIGNED": return AppTheme.success
+        case "UNASSIGNED": return AppTheme.warning
         default: return .gray
         }
     }
@@ -1081,10 +1275,7 @@ struct DeviceDetailSheet: View {
                         }
                     }
                     .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(NSColor.controlBackgroundColor))
-                    )
+                    .materialCard(cornerRadius: 12, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.04)
                     
                     // Assigned Server Section
                     VStack(alignment: .leading, spacing: 12) {
@@ -1119,10 +1310,7 @@ struct DeviceDetailSheet: View {
                         }
                     }
                     .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(NSColor.controlBackgroundColor))
-                    )
+                    .materialCard(cornerRadius: 12, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.04)
                     
                     // AppleCare Coverage Section
                     VStack(alignment: .leading, spacing: 12) {
@@ -1152,7 +1340,7 @@ struct DeviceDetailSheet: View {
                         } else if let error = appleCareError {
                             HStack {
                                 Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(AppTheme.warning)
                                 Text(error)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -1161,7 +1349,7 @@ struct DeviceDetailSheet: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.orange.opacity(0.1))
+                                    .fill(AppTheme.warning.opacity(0.12))
                             )
                         } else if !isLoadingAppleCare {
                             Button(action: loadAppleCare) {
@@ -1171,14 +1359,12 @@ struct DeviceDetailSheet: View {
                         }
                     }
                     .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(NSColor.controlBackgroundColor))
-                    )
+                    .materialCard(cornerRadius: 12, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.04)
                 }
                 .padding(20)
             }
         }
+        .background(.ultraThinMaterial)
         .frame(width: 560, height: 580)
         .onAppear {
             // Auto-load MDM server on appear
@@ -1228,7 +1414,7 @@ struct CoverageItem: View {
                 .foregroundColor(.secondary)
             HStack(spacing: 6) {
                 Circle()
-                    .fill(isActive ? Color.green : Color.orange)
+                    .fill(isActive ? AppTheme.success : AppTheme.warning)
                     .frame(width: 8, height: 8)
                 Text(value)
                     .font(.body)
@@ -1277,7 +1463,7 @@ struct MDMServersView: View {
                 Spacer()
             }
             .padding(20)
-            .background(Color(NSColor.windowBackgroundColor))
+            .background(.ultraThinMaterial)
             
             Divider()
             
@@ -1286,7 +1472,7 @@ struct MDMServersView: View {
                 ContentUnavailableView(
                     "No MDM Servers",
                     systemImage: "server.rack",
-                    description: Text("Connect to ABM to load your MDM servers")
+                    description: Text("Connect to \(viewModel.platform.displayName) to load your MDM servers")
                 )
                 Spacer()
             } else {
@@ -1308,7 +1494,7 @@ struct MDMServersView: View {
                         .buttonStyle(.borderedProminent)
                     }
                     .padding(16)
-                    .background(Color(NSColor.controlBackgroundColor))
+                    .background(.thinMaterial)
                 }
             }
         }
@@ -1355,6 +1541,17 @@ struct DeviceAssignmentView: View {
     @State private var selectedDevices: Set<String> = []
     @State private var selectedMDM: String = ""
     @State private var actionType = "ASSIGN"
+    @State private var deviceSearchText = ""
+
+    private var filteredDevices: [OrgDevice] {
+        let query = deviceSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return viewModel.devices }
+
+        return viewModel.devices.filter { device in
+            device.serialNumber.localizedCaseInsensitiveContains(query) ||
+            (device.model ?? "").localizedCaseInsensitiveContains(query)
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -1371,7 +1568,7 @@ struct DeviceAssignmentView: View {
                 Spacer()
             }
             .padding(20)
-            .background(Color(NSColor.windowBackgroundColor))
+            .background(.ultraThinMaterial)
             
             Divider()
             
@@ -1388,6 +1585,8 @@ struct DeviceAssignmentView: View {
                         }
                         .pickerStyle(.segmented)
                     }
+                    .padding(16)
+                    .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     
                     // MDM Server Selection
                     if actionType == "ASSIGN" {
@@ -1403,6 +1602,8 @@ struct DeviceAssignmentView: View {
                             }
                             .pickerStyle(.menu)
                         }
+                        .padding(16)
+                        .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     }
                     
                     // Device Selection
@@ -1411,18 +1612,39 @@ struct DeviceAssignmentView: View {
                             Text("Select Devices")
                                 .font(.headline)
                             Spacer()
-                            Text("\(selectedDevices.count) selected")
+                            Text("\(selectedDevices.count) selected • \(filteredDevices.count) shown")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
+
+                        HStack(spacing: 8) {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                            TextField("Search by serial or model...", text: $deviceSearchText)
+                                .textFieldStyle(.plain)
+
+                            if !deviceSearchText.isEmpty {
+                                Button(action: { deviceSearchText = "" }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .materialInsetField(cornerRadius: 8)
                         
                         if viewModel.devices.isEmpty {
-                            Text("No devices available. Connect to ABM first.")
+                            Text("No devices available. Connect to \(viewModel.platform.displayName) first.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .padding()
+                        } else if filteredDevices.isEmpty {
+                            ContentUnavailableView.search(text: deviceSearchText)
+                                .frame(height: 140)
                         } else {
-                            List(viewModel.devices, selection: $selectedDevices) { device in
+                            List(filteredDevices, selection: $selectedDevices) { device in
                                 HStack {
                                     Text(device.model ?? device.serialNumber)
                                     Spacer()
@@ -1435,6 +1657,8 @@ struct DeviceAssignmentView: View {
                             .frame(height: 250)
                         }
                     }
+                    .padding(16)
+                    .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     
                     // Execute Button
                     Button(action: {
@@ -1465,7 +1689,7 @@ struct DeviceAssignmentView: View {
                     if let status = viewModel.statusMessage {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundColor(AppTheme.success)
                             Text(status)
                                 .font(.subheadline)
                             Spacer()
@@ -1473,7 +1697,7 @@ struct DeviceAssignmentView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.green.opacity(0.1))
+                                .fill(AppTheme.success.opacity(0.12))
                         )
                     }
                     
@@ -1481,7 +1705,7 @@ struct DeviceAssignmentView: View {
                     if let error = viewModel.errorMessage {
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.orange)
+                                .foregroundColor(AppTheme.error)
                             Text(error)
                                 .font(.subheadline)
                             Spacer()
@@ -1496,7 +1720,7 @@ struct DeviceAssignmentView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.orange.opacity(0.1))
+                                .fill(AppTheme.error.opacity(0.12))
                         )
                     }
                 }
@@ -1527,7 +1751,7 @@ struct ActivityStatusView: View {
                 Spacer()
             }
             .padding(20)
-            .background(Color(NSColor.windowBackgroundColor))
+            .background(.ultraThinMaterial)
             
             Divider()
             
@@ -1540,7 +1764,9 @@ struct ActivityStatusView: View {
                         
                         HStack(spacing: 12) {
                             TextField("Enter Activity ID...", text: $activityId)
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.plain)
+                                .padding(8)
+                                .materialInsetField(cornerRadius: 8)
                             
                             Button("Check Status") {
                                 Task {
@@ -1551,6 +1777,8 @@ struct ActivityStatusView: View {
                             .disabled(activityId.isEmpty)
                         }
                     }
+                    .padding(16)
+                    .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     
                     // Last Activity
                     if let lastId = viewModel.lastActivityId {
@@ -1572,11 +1800,10 @@ struct ActivityStatusView: View {
                                 .buttonStyle(.bordered)
                             }
                             .padding(12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(NSColor.controlBackgroundColor))
-                            )
+                            .materialCard(cornerRadius: 8, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.03)
                         }
+                        .padding(16)
+                        .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     }
                     
                     // Activity Result
@@ -1595,11 +1822,10 @@ struct ActivityStatusView: View {
                                 DetailItem(label: "Created", value: status.data.attributes.createdDateTime)
                             }
                             .padding(16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(NSColor.controlBackgroundColor))
-                            )
+                            .materialCard(cornerRadius: 12, material: .ultraThinMaterial, strokeOpacity: 0.12, shadowOpacity: 0.04)
                         }
+                        .padding(16)
+                        .materialCard(cornerRadius: 14, material: .regularMaterial, strokeOpacity: 0.12, shadowOpacity: 0.05)
                     }
                 }
                 .padding(24)
